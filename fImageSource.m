@@ -26,4 +26,5 @@ bitsOut = reshape(rgbBin, numel(rgbBin), 1);
 if length(bitsOut) < p
     bitsOut(p) = 0;
 end
+bitsOut = double(bitsOut);
 end

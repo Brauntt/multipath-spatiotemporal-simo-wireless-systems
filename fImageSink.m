@@ -17,6 +17,7 @@
 
 function fImageSink(bitsIn, Q, x, y)
 bitsIn = bitsIn(1: Q);
+bitsIn = uint8(bitsIn);
 rgbBinO = reshape(bitsIn, length(bitsIn)/8, 8);
 rgbO = reshape(bi2de(rgbBinO), x, y, 3);
 imshow(rgbO); 

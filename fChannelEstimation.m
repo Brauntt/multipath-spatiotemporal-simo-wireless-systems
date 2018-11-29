@@ -7,7 +7,7 @@
 % Inputs
 % symbolsIn (Fx1 Complex) = R channel symbol chips received
 % goldseq (Wx1 Integers) = W bits of 1's and 0's representing the gold
-% sequence of the desired source used in the modulation process
+% sequence of the desired source used in the modulation process!!!!!!
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Outputs
 % delay_estimate = Vector of estimates of the delays of each path of the
@@ -18,4 +18,4 @@
 % desired signal
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-function [delay_estimate, DOA_estimate, beta_estimate]=fChannelEstimation(symbolsIn,goldseq)
+function [delay_estimate, DOA_estimate, beta_estimate]=fChannelEstimation(symbolsIn, goldSeq)
