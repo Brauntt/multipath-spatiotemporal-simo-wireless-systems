@@ -15,11 +15,11 @@
 % symbolsOut (Rx1 Complex) = R channel symbol chips after DS-QPSK Modulation
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-function [symbolsOut]=fDSQPSKModulator(bitsIn, goldSeq, phi)
+function [symbolsIn]=fDSQPSKModulator(bitsIn, goldSeq, phi)
 % subStreams = 1 - 2 * (reshape(bitsIn, length(bitsIn) / 2, 2));
 subStreams(:, 1) = 1 - 2 * bitsIn(1: 2: end);
 subStreams(:, 2) = 1 - 2 * bitsIn(2: 2: end);
 symbolsQpsk = 1 / sqrt(2) *(cos(phi) * subStreams(:, 1) + 1i * sin(phi) * subStreams(:, 2));
-symbolsOut = symbolsQpsk * goldSeq';
-symbolsOut = reshape(symbolsOut, numel(symbolsOut), 1);
+symbolsIn = symbolsQpsk * goldSeq';
+symbolsIn = reshape(symbolsIn, numel(symbolsIn), 1);
 end

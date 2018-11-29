@@ -18,13 +18,13 @@
 % y (Integer) = Number of pixels in image in y dimension
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-function [bitsOut, x, y]=fImageSource(fileName, p)
+function [bitsIn, x, y]=fImageSource(fileName, p)
 rgb = imread(fileName);
 [x, y, ~] = size(rgb);
 rgbBin = de2bi(rgb, 8);
-bitsOut = reshape(rgbBin, numel(rgbBin), 1);
-if length(bitsOut) < p
-    bitsOut(p) = 0;
+bitsIn = reshape(rgbBin, numel(rgbBin), 1);
+if length(bitsIn) < p
+    bitsIn(p) = 0;
 end
-bitsOut = double(bitsOut);
+bitsIn = double(bitsIn);
 end

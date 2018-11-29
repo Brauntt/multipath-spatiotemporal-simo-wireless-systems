@@ -14,4 +14,17 @@
 % bitsOut (Px1 Integers) = P demodulated bits of 1's and 0's
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-function [bitsOut]=fDSQPSKDemodulator(symbolsIn,GoldSeq,phi)
+function [bitsOut]=fDSQPSKDemodulator(symbolsOut, goldSeq, phi)
+nDelays = 100;
+[temp, nSignals] = size(goldSeq);
+for iDelay = 1: nDelays
+    fun(iDelay) = abs(symbolsOut(iDelay:iDelay+temp-1).'*goldSeq(:,1));
+end
+[~, delay] = max(fun);
+de = mod(delay, 15)
+% symbolsDesp = zeros(numel(symbolsOut)/length(goldSeq), nSignals);
+% for iSignal = 1: nSignals
+%     symbolsDesp(:, iSignal) = reshape(symbolsOut, numel(symbolsOut)/length(goldSeq), 15) * goldSeq(:, iSignal);
+% end
+flag = 1;
+end
