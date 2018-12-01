@@ -23,12 +23,20 @@
 % symbolsOut (FxN Complex) = F channel symbol chips received from each antenna
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-function [symbolsOut] = fChannel(symbolsIn, delays, fadingCoefs, snr, goldSeq)
+function [symbolsOut] = fChannel(nPaths, symbolsIn, delays, fadingCoefs, doa, snr, array, goldSeq)
 [nDelays, nSignals] = size(goldSeq);
 symbolsIn(length(symbolsIn) + nDelays, nSignals) = 0;
+symbolsUser = zeros(size(symbolsIn));
+pathCounter = 1;
 for iSignal = 1: nSignals
-     symbolsIn(:, iSignal) = fadingCoefs(iSignal) * circshift(symbolsIn(:, iSignal), delays(iSignal));
+    symbolsPath = zeros(length(symbolsIn), nPaths(iSignal));
+    for iPath = 1: nPaths(iSignal)
+        symbolsPath(:, iPath) = fadingCoefs(pathCounter) * circshift(symbolsIn(:, iSignal), delays(pathCounter));
+        noise = 1 / sqrt(2 * snr) * (randn(length(symbolsIn), 1) + 1i * randn(length(symbolsIn), 1));
+        symbolsPath(:, iPath) = symbolsPath(:, iPath) + noise;
+        pathCounter = pathCounter + 1;
+    end
+    symbolsUser(:, iSignal) = sum(symbolsPath, 2);
 end
-noise = 1 / sqrt(2 * snr) * (randn(length(symbolsIn), 1) + 1i * randn(length(symbolsIn), 1));
-symbolsOut = sum(symbolsIn, 2) + noise;
+symbolsOut = sum(symbolsUser, 2);
 end

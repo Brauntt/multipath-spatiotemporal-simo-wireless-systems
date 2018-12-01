@@ -35,8 +35,9 @@ for iSnr = 1: nSnr
         % fImageSink(bitsIn, Q, x, y);
         symbolsIn(:, iSignal) = fDSQPSKModulator(bitsIn, goldSeq(:, iSignal), phi);
     end
-    [symbolsOut] = fChannel(nPaths, symbolsIn, delays, fadingCoefs, doa, snr(iSnr), array, goldSeq);
-    [bitsOut] = fDSQPSKDemodulator(symbolsOut, goldSeq, phi);
+    [symbolsOut] = fChannel(symbolsIn, delays, fadingCoefs, snr(iSnr), goldSeq);
+    [delayEst] = fChannelEstimation(symbolsOut, goldSeq);
+    [bitsOut] = fDSQPSKDemodulator(symbolsOut, goldSeq, phi, delayEst);
     fImageSink(bitsOut, Q, x, y, snrDb(iSnr));
 end
 flag = 1;
