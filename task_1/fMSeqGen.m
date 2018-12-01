@@ -12,7 +12,7 @@
 % MSeq (Wx1 Integers) = W bits of 1's and 0's
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-function [mSeq]=fMSeqGen(coeffs)
+function [mSeq] = fMSeqGen(coeffs)
 degMax = length(coeffs) - 1;
 nStates = 2 ^ (degMax) - 1;
 regInit = ones(1, degMax);

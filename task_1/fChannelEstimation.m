@@ -18,4 +18,12 @@
 % desired signal
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-function [delay_estimate, DOA_estimate, beta_estimate]=fChannelEstimation(symbolsIn, goldSeq)
+function [delayEst] = fChannelEstimation(symbolsOut, goldSeq)
+[nDelays, nSignals] = size(goldSeq);
+corFun = zeros(nDelays, nSignals);
+for iDelay = 1: nDelays
+    corFun(iDelay, :) = abs(symbolsOut(iDelay: iDelay + nDelays - 1).' * goldSeq);
+end
+[~, delayEst] = max(corFun);
+delayEst = delayEst - 1;
+end

@@ -15,10 +15,17 @@
 % None
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-function fImageSink(bitsIn, Q, x, y)
-bitsIn = bitsIn(1: Q);
-bitsIn = uint8(bitsIn);
-rgbBinO = reshape(bitsIn, length(bitsIn)/8, 8);
-rgbO = reshape(bi2de(rgbBinO), x, y, 3);
-imshow(rgbO); 
+function fImageSink(bitsOut, Q, x, y, snrDb)
+nSignals = length(Q);
+rgb = cell(nSignals, 1);
+figure;
+for iSignal = 1: nSignals
+    bits = bitsOut(1: Q(iSignal), iSignal);
+    bits = uint8(bits);
+    rgbBin = reshape(bits, length(bits)/8, 8);
+    rgb{iSignal} = reshape(bi2de(rgbBin), x(iSignal), y(iSignal), 3);
+    subplot(nSignals, 1, iSignal);
+    imshow(rgb{iSignal});
+    title(['Image of user ', num2str(iSignal), ' (snr = ', num2str(snrDb) ' dB)']);
+end
 end

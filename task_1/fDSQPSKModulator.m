@@ -15,11 +15,25 @@
 % symbolsOut (Rx1 Complex) = R channel symbol chips after DS-QPSK Modulation
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-function [symbolsIn]=fDSQPSKModulator(bitsIn, goldSeq, phi)
-% subStreams = 1 - 2 * (reshape(bitsIn, length(bitsIn) / 2, 2));
-subStreams(:, 1) = 1 - 2 * bitsIn(1: 2: end);
-subStreams(:, 2) = 1 - 2 * bitsIn(2: 2: end);
-symbolsQpsk = 1 / sqrt(2) *(cos(phi) * subStreams(:, 1) + 1i * sin(phi) * subStreams(:, 2));
+function [symbolsIn] = fDSQPSKModulator(bitsIn, goldSeq, phi)
+if mod(length(bitsIn), 2) ~= 0 
+    bitsIn(end + 1) = 0;
+end
+nSymbols = length(bitsIn) / 2;
+symbolsQpsk = zeros(nSymbols, 1);
+for iSymbol = 1: nSymbols
+   pair =  bitsIn(2 * iSymbol - 1: 2 * iSymbol);
+   if isequal(pair, [0; 0])
+       symbolsQpsk(iSymbol) = 1 / sqrt(2) * (cos(phi) + 1i * sin(phi));
+   elseif isequal(pair, [0; 1])
+       symbolsQpsk(iSymbol) = 1 / sqrt(2) * (cos(phi + pi / 2) + 1i * sin(phi + pi / 2));
+   elseif isequal(pair, [1; 1])
+       symbolsQpsk(iSymbol) = 1 / sqrt(2) * (cos(phi + pi) + 1i * sin(phi + pi));
+   else
+       symbolsQpsk(iSymbol) = 1 / sqrt(2) * (cos(phi + 3 * pi / 2) + 1i * sin(phi + 3 * pi / 2));
+   end
+end
+
 symbolsIn = symbolsQpsk * goldSeq';
-symbolsIn = reshape(symbolsIn, numel(symbolsIn), 1);
+symbolsIn = reshape(symbolsIn.', numel(symbolsIn), 1);
 end
