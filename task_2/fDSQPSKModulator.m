@@ -15,7 +15,7 @@
 % symbolsOut (Rx1 Complex) = R channel symbol chips after DS-QPSK Modulation
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-function [symbolsIn]=fDSQPSKModulator(bitsIn, goldSeq, phi)
+function [symbolsIn] = fDSQPSKModulator(bitsIn, goldSeq, phi)
 if mod(length(bitsIn), 2) ~= 0 
     bitsIn(end + 1) = 0;
 end

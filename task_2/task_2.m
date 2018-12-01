@@ -10,7 +10,7 @@ phi = (surIndex + 2 * foreIndex) * pi / 180;
 p = widthMax * heightMax * 3 * 8;
 doa = [30 0; 90 0; 150 0];
 array = [0 0 0];
-snrDb = [50 40];
+snrDb = [30 40];
 nPaths = [3; 1; 1];
 delays = [mod(surIndex + foreIndex, 4); 4 + mod(surIndex + foreIndex, 5); 9 + mod(surIndex + foreIndex, 6); 8; 13];
 fadingCoefs = [0.8; 0.4 * exp(-1i * -40 / 180 * pi); 0.8 * exp(-1i * 80 / 180 * pi); 0.5; 0.2];
@@ -35,8 +35,10 @@ for iSignal = 1: nSignals
     symbolsIn(:, iSignal) = fDSQPSKModulator(bitsIn, goldSeq(:, iSignal), phi);
 end
 for iSnr = 1: nSnr
-    [symbolsOut] = fChannel(nPaths, symbolsIn, delays, fadingCoefs, doa, snr(iSnr), array, goldSeq);
-    [bitsOut] = fDSQPSKDemodulator(symbolsOut, goldSeq, phi);
+    [symbolsOut] = fChannel(nPaths, symbolsIn, delays, fadingCoefs, snr(iSnr), goldSeq);
+    [delayEst] = fChannelEstimation(symbolsOut, goldSeq, nPaths);
+%     delayEst = delays;
+    [bitsOut] = fDSQPSKDemodulator(symbolsOut, goldSeq, phi, delayEst, nPaths, fadingCoefs);
     fImageSink(bitsOut, Q, x, y, snrDb(iSnr));
 end
 flag = 1;

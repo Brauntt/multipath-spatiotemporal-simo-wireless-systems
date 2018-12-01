@@ -18,4 +18,29 @@
 % desired signal
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-function [delay_estimate, DOA_estimate, beta_estimate]=fChannelEstimation(symbolsIn, goldSeq)
+function [delayEst] = fChannelEstimation(symbolsOut, goldSeq, nPaths)
+[nDelays, nSignals] = size(goldSeq);
+corFun = zeros(nDelays, nSignals);
+for iDelay = 1: nDelays
+    corFun(iDelay, :) = abs(symbolsOut(iDelay: iDelay + nDelays - 1).' * goldSeq);
+end
+pathCounter = 1;
+delayEst = zeros(sum(nPaths), 1);
+for iSignal = 1: nSignals
+[~, delayIndex] = maxk(corFun(:, iSignal), nPaths(iSignal));
+delayEst(pathCounter: pathCounter + nPaths(iSignal) - 1) = sort(delayIndex) - 1;
+pathCounter = pathCounter + nPaths(iSignal);
+% delaySet{iSignal} = sort(delayIndex) - 1;
+end
+end
+
+% for iSignal = 1: nSignals
+%    for iPath = 1: nPaths(iSignal)
+%        corFun = zeros(nDelays, 1);
+%        for iDelay = 1: nDelays
+%            corFun(iDelay) = abs(symbolsOut(iDelay: iDelay + nDelays - 1).' * goldSeq(:, iSignal));
+%        end
+%        [~, delayEst] = maxk(corFun, );
+%    end
+% end
+% end

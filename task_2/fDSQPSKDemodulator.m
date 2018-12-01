@@ -14,22 +14,24 @@
 % bitsOut (Px1 Integers) = P demodulated bits of 1's and 0's
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-function [bitsOut]=fDSQPSKDemodulator(symbolsOut, goldSeq, phi)
+function [bitsOut] = fDSQPSKDemodulator(symbolsOut, goldSeq, phi, delayEst, nPaths, fadingCoefs)
 % nDelays = length(goldSeq) = number of possible delays
 [nDelays, nSignals] = size(goldSeq);
-corFun = zeros(nDelays, nSignals);
-symbolsDesp = zeros(length(symbolsOut) - nDelays, nSignals);
-for iDelay = 1: nDelays
-    corFun(iDelay, :) = abs(symbolsOut(iDelay: iDelay + nDelays - 1).' * goldSeq);
-end
-[~, delay] = max(corFun);
-delay = delay - 1;
 nSymbols = (length(symbolsOut) - nDelays) / nDelays;
 symbol = zeros(nSymbols, nSignals);
+pathCounter = 1;
 for iSignal = 1: nSignals
-    temp = circshift(symbolsOut, -delay(iSignal));
-    symbolsDesp(:, iSignal) = temp(1: length(symbolsOut) - nDelays);
-    symbol(:, iSignal) = reshape(symbolsDesp(:, iSignal), nDelays, nSymbols).' * goldSeq(:, iSignal);
+    symbolCut = zeros(length(symbolsOut) - nDelays, nPaths(iSignal));
+    symbolPath = zeros(nSymbols, nPaths(iSignal));
+    weightMrc = zeros(nPaths(iSignal), 1);
+    for iPath = 1: nPaths(iSignal)
+        temp = circshift(symbolsOut, -delayEst(pathCounter));
+        symbolCut(:, iPath) = temp(1: length(symbolsOut) - nDelays);
+        symbolPath(:, iPath) = reshape(symbolCut(:, iPath), nDelays, nSymbols).' * goldSeq(:, iSignal);
+        weightMrc(iPath) = fadingCoefs(pathCounter)';
+        pathCounter = pathCounter + 1;
+    end
+    symbol(:, iSignal) = sum(symbolPath .* weightMrc.', 2);
 end
 bitsOut = zeros(2 * nSymbols, nSignals);
 angleSymbols = [phi, phi + pi / 2, phi - pi, phi - pi / 2];

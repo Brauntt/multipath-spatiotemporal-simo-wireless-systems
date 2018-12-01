@@ -23,7 +23,7 @@
 % symbolsOut (FxN Complex) = F channel symbol chips received from each antenna
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-function [symbolsOut] = fChannel(nPaths, symbolsIn, delays, fadingCoefs, doa, snr, array, goldSeq)
+function [symbolsOut] = fChannel(nPaths, symbolsIn, delays, fadingCoefs, snr, goldSeq)
 [nDelays, nSignals] = size(goldSeq);
 symbolsIn(length(symbolsIn) + nDelays, nSignals) = 0;
 symbolsUser = zeros(size(symbolsIn));
