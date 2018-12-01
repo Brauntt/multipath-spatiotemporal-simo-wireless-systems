@@ -16,10 +16,6 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 function [symbolsIn]=fDSQPSKModulator(bitsIn, goldSeq, phi)
-% subStreams = 1 - 2 * (reshape(bitsIn, length(bitsIn) / 2, 2));
-% subStreams(:, 1) = 1 - 2 * bitsIn(1: 2: end);
-% subStreams(:, 2) = 1 - 2 * bitsIn(2: 2: end);
-% symbolsQpsk = 1 / sqrt(2) * (cos(phi) * subStreams(:, 1) + 1i * sin(phi) * subStreams(:, 2));
 if mod(length(bitsIn), 2) ~= 0 
     bitsIn(end + 1) = 0;
 end

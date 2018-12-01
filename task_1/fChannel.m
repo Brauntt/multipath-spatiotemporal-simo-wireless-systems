@@ -25,7 +25,6 @@
 
 function [symbolsOut] = fChannel(nPaths, symbolsIn, delays, fadingCoefs, doa, snr, array, goldSeq)
 [nDelays, nSignals] = size(goldSeq);
-% nSignals = length(nPaths);
 symbolsIn(length(symbolsIn) + nDelays, nSignals) = 0;
 for iSignal = 1: nSignals
      symbolsIn(:, iSignal) = fadingCoefs(iSignal) * circshift(symbolsIn(:, iSignal), delays(iSignal));
