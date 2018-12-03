@@ -27,8 +27,10 @@ end
 pathCounter = 1;
 delayEst = zeros(sum(nPaths), 1);
 for iSignal = 1: nSignals
-[~, delayIndex] = maxk(corFun(:, iSignal), nPaths(iSignal));
-delayEst(pathCounter: pathCounter + nPaths(iSignal) - 1) = sort(delayIndex) - 1;
+% [~, delayIndex] = maxk(corFun(:, iSignal), nPaths(iSignal));
+[~, delayIndex] = sort(corFun(:, iSignal), 'descend');
+temp = unique(mod(delayIndex, nDelays), 'stable');
+delayEst(pathCounter: pathCounter + nPaths(iSignal) - 1) = sort(temp(1: nPaths(iSignal))) - 1;
 pathCounter = pathCounter + nPaths(iSignal);
 % delaySet{iSignal} = sort(delayIndex) - 1;
 end
