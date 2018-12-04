@@ -1,4 +1,4 @@
-clear;close;
+clear;close all;
 surIndex = 26;
 foreIndex = 25;
 widthMax = 160;
@@ -11,7 +11,7 @@ p = widthMax * heightMax * 3 * 8;
 doa = [30 0; 90 0; 150 0];
 array = [0 0 0];
 snrDb = [0 40];
-snr = 10 .^ (snrDb / 10);
+varNoise = 10 .^ (-snrDb / 10);
 x = zeros(nSignals, 1); y = zeros(nSignals, 1); Q = zeros(nSignals, 1);
 %% Gold sequence
 symbolsIn = zeros((2 ^ (length(coeffs) - 1) - 1) * p / 2, nSignals);
@@ -35,7 +35,7 @@ for iSnr = 1: nSnr
         % fImageSink(bitsIn, Q, x, y);
         symbolsIn(:, iSignal) = fDSQPSKModulator(bitsIn, goldSeq(:, iSignal), phi);
     end
-    [symbolsOut] = fChannel(symbolsIn, delays, fadingCoefs, snr(iSnr), goldSeq);
+    [symbolsOut] = fChannel(symbolsIn, delays, fadingCoefs, varNoise(iSnr), goldSeq);
     [delayEst] = fChannelEstimation(symbolsOut, goldSeq);
     [bitsOut] = fDSQPSKDemodulator(symbolsOut, goldSeq, phi, delayEst);
     fImageSink(bitsOut, Q, x, y, snrDb(iSnr));

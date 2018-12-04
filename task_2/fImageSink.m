@@ -26,6 +26,11 @@ for iSignal = 1: nSignals
     rgb{iSignal} = reshape(bi2de(rgbBin), x(iSignal), y(iSignal), 3);
     subplot(nSignals, 1, iSignal);
     imshow(rgb{iSignal});
-    title(['Image of user ', num2str(iSignal), ' (snr = ', num2str(snrDb) ' dB)']);
+    if nargin == 4
+        title(['Original Image of User ', num2str(iSignal)]);
+    end
+    if nargin == 5
+        title(['Image of User ', num2str(iSignal), ' (SNR = ', num2str(snrDb) ' dB)']);
+    end
 end
 end

@@ -19,11 +19,20 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 function [delayEst] = fChannelEstimation(symbolsOut, goldSeq)
-[nDelays, nSignals] = size(goldSeq);
-corFun = zeros(nDelays, nSignals);
-for iDelay = 1: nDelays
-    corFun(iDelay, :) = abs(symbolsOut(iDelay: iDelay + nDelays - 1).' * goldSeq);
+[nRelativeDelays, nSignals] = size(goldSeq);
+delayMax = 10 * nRelativeDelays;
+delayEst = zeros(nSignals, 1);
+corFun = zeros(delayMax, nSignals);
+for iDelay = 1: delayMax
+    corFun(iDelay, :) = abs(symbolsOut(iDelay: iDelay + nRelativeDelays - 1).' * goldSeq);
 end
-[~, delayEst] = max(corFun);
-delayEst = delayEst - 1;
+for iSignal = 1: nSignals
+% [~, delayIndex] = maxk(corFun(:, iSignal), nPaths(iSignal));
+% delayEst(pathCounter: pathCounter + nPaths(iSignal) - 1) = sort(delayIndex) - 1;
+[~, delayIndex] = sort(corFun(:, iSignal), 'descend');
+temp = unique(mod(delayIndex, nRelativeDelays), 'stable');
+delayEst(iSignal) = temp(1) - 1;
+end
+% [~, delayEst] = max(corFun);
+% delayEst = delayEst - 1;
 end

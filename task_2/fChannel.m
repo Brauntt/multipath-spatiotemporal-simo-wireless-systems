@@ -24,15 +24,17 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 function [symbolsOut] = fChannel(nPaths, symbolsIn, delays, fadingCoefs, varNoise, goldSeq)
-[nDelays, nSignals] = size(goldSeq);
-symbolsIn(length(symbolsIn) + nDelays, nSignals) = 0;
+[nRelativeDelays, nSignals] = size(goldSeq);
+symbolsIn(length(symbolsIn) + nRelativeDelays, nSignals) = 0;
 symbolsUser = zeros(size(symbolsIn));
 pathCounter = 1;
 for iSignal = 1: nSignals
     symbolsPath = zeros(length(symbolsIn), nPaths(iSignal));
     for iPath = 1: nPaths(iSignal)
         symbolsPath(:, iPath) = fadingCoefs(pathCounter) * circshift(symbolsIn(:, iSignal), delays(pathCounter));
-        noise = varNoise / sqrt(2) * (randn(length(symbolsIn), 1) + 1i * randn(length(symbolsIn), 1));
+%         noise = 0;
+        noise = fadingCoefs(pathCounter) * sqrt(varNoise) / sqrt(2) * (randn(length(symbolsIn), 1) + 1i * randn(length(symbolsIn), 1));
+%         noise = sqrt(varNoise) / sqrt(2) * (randn(length(symbolsIn), 1) + 1i * randn(length(symbolsIn), 1));
         symbolsPath(:, iPath) = symbolsPath(:, iPath) + noise;
         pathCounter = pathCounter + 1;
     end

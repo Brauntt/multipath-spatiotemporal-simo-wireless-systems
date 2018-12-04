@@ -15,19 +15,19 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 function [bitsOut] = fDSQPSKDemodulator(symbolsOut, goldSeq, phi, delayEst, nPaths, fadingCoefs)
-% nDelays = length(goldSeq) = number of possible delays
-[nDelays, nSignals] = size(goldSeq);
-nSymbols = (length(symbolsOut) - nDelays) / nDelays;
+% nRelativeDelays = length(goldSeq) = number of possible delays
+[nRelativeDelays, nSignals] = size(goldSeq);
+nSymbols = (length(symbolsOut) - nRelativeDelays) / nRelativeDelays;
 symbol = zeros(nSymbols, nSignals);
 pathCounter = 1;
 for iSignal = 1: nSignals
-    symbolCut = zeros(length(symbolsOut) - nDelays, nPaths(iSignal));
+    symbolCut = zeros(length(symbolsOut) - nRelativeDelays, nPaths(iSignal));
     symbolPath = zeros(nSymbols, nPaths(iSignal));
     weightMrc = zeros(nPaths(iSignal), 1);
     for iPath = 1: nPaths(iSignal)
         temp = circshift(symbolsOut, -delayEst(pathCounter));
-        symbolCut(:, iPath) = temp(1: length(symbolsOut) - nDelays);
-        symbolPath(:, iPath) = reshape(symbolCut(:, iPath), nDelays, nSymbols).' * goldSeq(:, iSignal);
+        symbolCut(:, iPath) = temp(1: length(symbolsOut) - nRelativeDelays);
+        symbolPath(:, iPath) = reshape(symbolCut(:, iPath), nRelativeDelays, nSymbols).' * goldSeq(:, iSignal);
         weightMrc(iPath) = fadingCoefs(pathCounter)';
         pathCounter = pathCounter + 1;
     end

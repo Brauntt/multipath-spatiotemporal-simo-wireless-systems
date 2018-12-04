@@ -24,16 +24,19 @@ symbolsQpsk = zeros(nSymbols, 1);
 for iSymbol = 1: nSymbols
    pair =  bitsIn(2 * iSymbol - 1: 2 * iSymbol);
    if isequal(pair, [0; 0])
+%        symbolsQpsk(iSymbol) = sqrt(2) * (cos(phi) + 1i * sin(phi));
        symbolsQpsk(iSymbol) = cos(phi) + 1i * sin(phi);
    elseif isequal(pair, [0; 1])
+%        symbolsQpsk(iSymbol) = sqrt(2) * (cos(phi + pi / 2) + 1i * sin(phi + pi / 2));
        symbolsQpsk(iSymbol) = cos(phi + pi / 2) + 1i * sin(phi + pi / 2);
    elseif isequal(pair, [1; 1])
+%        symbolsQpsk(iSymbol) = sqrt(2) * (cos(phi + pi) + 1i * sin(phi + pi));
        symbolsQpsk(iSymbol) = cos(phi + pi) + 1i * sin(phi + pi);
    else
+%        symbolsQpsk(iSymbol) = sqrt(2) * (cos(phi + 3 * pi / 2) + 1i * sin(phi + 3 * pi / 2));
        symbolsQpsk(iSymbol) = cos(phi + 3 * pi / 2) + 1i * sin(phi + 3 * pi / 2);
    end
 end
-
 symbolsIn = symbolsQpsk * goldSeq';
 symbolsIn = reshape(symbolsIn.', numel(symbolsIn), 1);
 end

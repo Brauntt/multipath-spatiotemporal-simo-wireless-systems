@@ -23,12 +23,13 @@
 % symbolsOut (FxN Complex) = F channel symbol chips received from each antenna
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-function [symbolsOut] = fChannel(symbolsIn, delays, fadingCoefs, snr, goldSeq)
-[nDelays, nSignals] = size(goldSeq);
-symbolsIn(length(symbolsIn) + nDelays, nSignals) = 0;
+function [symbolsOut] = fChannel(symbolsIn, delays, fadingCoefs, varNoise, goldSeq)
+[nRelativeDelays, nSignals] = size(goldSeq);
+symbolsIn(length(symbolsIn) + nRelativeDelays, nSignals) = 0;
 for iSignal = 1: nSignals
      symbolsIn(:, iSignal) = fadingCoefs(iSignal) * circshift(symbolsIn(:, iSignal), delays(iSignal));
+     noise = abs(fadingCoefs(iSignal)) .^2 * varNoise / sqrt(2) * (randn(length(symbolsIn), 1) + 1i * randn(length(symbolsIn), 1));
+     symbolsIn(:, iSignal) = symbolsIn(:, iSignal) + noise;
 end
-noise = 1 / sqrt(2 * snr) * (randn(length(symbolsIn), 1) + 1i * randn(length(symbolsIn), 1));
-symbolsOut = sum(symbolsIn, 2) + noise;
+symbolsOut = sum(symbolsIn, 2);
 end
