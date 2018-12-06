@@ -23,22 +23,37 @@
 % symbolsOut (FxN Complex) = F channel symbol chips received from each antenna
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-function [symbolsOut] = fChannel(nPaths, symbolsIn, delays, fadingCoefs, varNoise, goldSeq)
+function [symbolsOut] = fChannel(nPaths, symbolsIn, delays, fadingCoefs, directions, snr, array, goldSeq)
 [nRelativeDelays, nSignals] = size(goldSeq);
 symbolsIn(length(symbolsIn) + nRelativeDelays, nSignals) = 0;
 symbolsUser = zeros(size(symbolsIn));
+symbolsAll = zeros(length(symbolsIn), sum(nPaths));
+% noise = zeros(size(symbolsIn));
 pathCounter = 1;
+startCounter = 1;
+% nAnts = length(array);
+noise = cell(nSignals, 1);
+% gain of elements on users directions
+spvSources = spv(array, directions);
 for iSignal = 1: nSignals
     symbolsPath = zeros(length(symbolsIn), nPaths(iSignal));
     for iPath = 1: nPaths(iSignal)
         symbolsPath(:, iPath) = fadingCoefs(pathCounter) * circshift(symbolsIn(:, iSignal), delays(pathCounter));
 %         noise = 0;
 %         noise = fadingCoefs(pathCounter) * sqrt(varNoise) / sqrt(2) * (randn(length(symbolsIn), 1) + 1i * randn(length(symbolsIn), 1));
-        noise = sqrt(varNoise) * (randn(length(symbolsIn), 1) + 1i * randn(length(symbolsIn), 1));
-        symbolsPath(:, iPath) = symbolsPath(:, iPath) + noise;
+%         noise = sqrt(varNoise) * (randn(length(symbolsIn), 1) + 1i * randn(length(symbolsIn), 1));
+%         symbolsPath(:, iPath) = symbolsPath(:, iPath) + noise;
+        symbolsAll(:, pathCounter) = symbolsPath(:, iPath);
         pathCounter = pathCounter + 1;
     end
     symbolsUser(:, iSignal) = sum(symbolsPath, 2);
+    symbolsIdeal = (spv(array, directions(startCounter: pathCounter - 1, :)) * symbolsPath.').';
+    startCounter = pathCounter;
+    powerSignal = sum(abs(symbolsIdeal).^2) / length(symbolsIdeal);
+    powerNoise = powerSignal / snr;
+    noise{iSignal} = (randn(length(symbolsIn), 1) + 1i * randn(length(symbolsIn), 1)) * powerNoise;
 end
-symbolsOut = sum(symbolsUser, 2);
+% noise = sqrt(varNoise) * (randn(length(symbolsIn), 1) + 1i * randn(length(symbolsIn), 1));
+symbolsOut = (spvSources * symbolsAll.').' + noise{1};
+% symbolsOut = sum(symbolsUser, 2);
 end

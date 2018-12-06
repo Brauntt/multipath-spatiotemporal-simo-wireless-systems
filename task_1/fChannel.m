@@ -28,7 +28,8 @@ function [symbolsOut] = fChannel(symbolsIn, delays, fadingCoefs, varNoise, goldS
 symbolsIn(length(symbolsIn) + nRelativeDelays, nSignals) = 0;
 for iSignal = 1: nSignals
      symbolsIn(:, iSignal) = fadingCoefs(iSignal) * circshift(symbolsIn(:, iSignal), delays(iSignal));
-     noise = abs(fadingCoefs(iSignal)) .^2 * varNoise / sqrt(2) * (randn(length(symbolsIn), 1) + 1i * randn(length(symbolsIn), 1));
+%      noise = abs(fadingCoefs(iSignal)) .^2 * varNoise / sqrt(2) * (randn(length(symbolsIn), 1) + 1i * randn(length(symbolsIn), 1));
+     noise = sqrt(varNoise) * (randn(length(symbolsIn), 1) + 1i * randn(length(symbolsIn), 1));
      symbolsIn(:, iSignal) = symbolsIn(:, iSignal) + noise;
 end
 symbolsOut = sum(symbolsIn, 2);

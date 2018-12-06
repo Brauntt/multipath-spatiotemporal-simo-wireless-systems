@@ -8,6 +8,7 @@ coeffs = [1 0 0 1 1; 1 1 0 0 1];
 phi = (surIndex + 2 * foreIndex) * pi / 180;
 % p = 1e6;
 p = widthMax * heightMax * 3 * 8;
+bitsIn = zeros(p, nSignals);
 doa = [30 0; 90 0; 150 0];
 array = [0 0 0];
 snrDb = [0 40];
@@ -30,14 +31,15 @@ for iSnr = 1: nSnr
         goldSeq(:, iSignal) = fGoldSeq(mSeq1, mSeq2, shift + iSignal - 1);
         fileName = ['pic_', num2str(iSignal), '.png'];
         % fileName = [num2str(iSignal), '.jpg'];
-        [bitsIn, x(iSignal), y(iSignal)] = fImageSource(fileName, p);
+        [bitsIn(:, iSignal), x(iSignal), y(iSignal)] = fImageSource(fileName, p);
         Q(iSignal) = x(iSignal) * y(iSignal) * 3 * 8;
-        % fImageSink(bitsIn, Q, x, y);
-        symbolsIn(:, iSignal) = fDSQPSKModulator(bitsIn, goldSeq(:, iSignal), phi);
+%         fImageSink(bitsIn, Q, x, y);
+        symbolsIn(:, iSignal) = fDSQPSKModulator(bitsIn(:, iSignal), goldSeq(:, iSignal), phi);
     end
     [symbolsOut] = fChannel(symbolsIn, delays, fadingCoefs, varNoise(iSnr), goldSeq);
     [delayEst] = fChannelEstimation(symbolsOut, goldSeq);
     [bitsOut] = fDSQPSKDemodulator(symbolsOut, goldSeq, phi, delayEst);
     fImageSink(bitsOut, Q, x, y, snrDb(iSnr));
 end
+fImageSink(bitsIn, Q, x, y);
 flag = 1;
