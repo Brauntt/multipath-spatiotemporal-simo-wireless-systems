@@ -15,15 +15,15 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 function [bitsOut] = fDSQPSKDemodulator(symbolsOut, goldSeq, phi, delayEst)
-% nDelays = length(goldSeq) = number of possible delays
-[nDelays, nSignals] = size(goldSeq);
-symbolsDesp = zeros(length(symbolsOut) - nDelays, nSignals);
-nSymbols = (length(symbolsOut) - nDelays) / nDelays;
+% nRelativeDelays = length(goldSeq) = number of possible delays
+[nRelativeDelays, nSignals] = size(goldSeq);
+symbolsDesp = zeros(length(symbolsOut) - nRelativeDelays, nSignals);
+nSymbols = (length(symbolsOut) - nRelativeDelays) / nRelativeDelays;
 symbol = zeros(nSymbols, nSignals);
 for iSignal = 1: nSignals
     temp = circshift(symbolsOut, -delayEst(iSignal));
-    symbolsDesp(:, iSignal) = temp(1: length(symbolsOut) - nDelays);
-    symbol(:, iSignal) = reshape(symbolsDesp(:, iSignal), nDelays, nSymbols).' * goldSeq(:, iSignal);
+    symbolsDesp(:, iSignal) = temp(1: length(symbolsOut) - nRelativeDelays);
+    symbol(:, iSignal) = reshape(symbolsDesp(:, iSignal), nRelativeDelays, nSymbols).' * goldSeq(:, iSignal);
 end
 bitsOut = zeros(2 * nSymbols, nSignals);
 angleSymbols = [phi, phi + pi / 2, phi - pi, phi - pi / 2];

@@ -1,4 +1,4 @@
-clear;close;
+clear;close all;
 surIndex = 26;
 foreIndex = 25;
 widthMax = 160;
@@ -8,15 +8,20 @@ coeffs = [1 0 0 1 1; 1 1 0 0 1];
 phi = (surIndex + 2 * foreIndex) * pi / 180;
 % p = 1e6;
 p = widthMax * heightMax * 3 * 8;
-doa = [30 0; 90 0; 150 0];
+bitsIn = zeros(p, nSignals);
+directions = [30 0; 90 0; 150 0];
 array = [0 0 0];
 snrDb = [0 40];
+nSnr = length(snrDb);
 snr = 10 .^ (snrDb / 10);
+% varNoise = 10 .^ (-snrDb / 10);
 x = zeros(nSignals, 1); y = zeros(nSignals, 1); Q = zeros(nSignals, 1);
+desiredUserIndex = 1;
 %% Gold sequence
 symbolsIn = zeros((2 ^ (length(coeffs) - 1) - 1) * p / 2, nSignals);
 nPaths = [1; 1; 1];
-delays = [5; 7; 12];
+delays = [5; 7; 12]
+ber = zeros(nSnr, 1);
 fadingCoefs = [0.4; 0.7; 0.2];
 [mSeq1] = fMSeqGen(coeffs(1, :));
 [mSeq2] = fMSeqGen(coeffs(2, :));
@@ -30,14 +35,16 @@ for iSnr = 1: nSnr
         goldSeq(:, iSignal) = fGoldSeq(mSeq1, mSeq2, shift + iSignal - 1);
         fileName = ['pic_', num2str(iSignal), '.png'];
         % fileName = [num2str(iSignal), '.jpg'];
-        [bitsIn, x(iSignal), y(iSignal)] = fImageSource(fileName, p);
+        [bitsIn(:, iSignal), x(iSignal), y(iSignal)] = fImageSource(fileName, p);
         Q(iSignal) = x(iSignal) * y(iSignal) * 3 * 8;
-        % fImageSink(bitsIn, Q, x, y);
-        symbolsIn(:, iSignal) = fDSQPSKModulator(bitsIn, goldSeq(:, iSignal), phi);
+%         fImageSink(bitsIn, Q, x, y);
+        symbolsIn(:, iSignal) = fDSQPSKModulator(bitsIn(:, iSignal), goldSeq(:, iSignal), phi);
     end
-    [symbolsOut] = fChannel(symbolsIn, delays, fadingCoefs, snr(iSnr), goldSeq);
-    [delayEst] = fChannelEstimation(symbolsOut, goldSeq);
-    [bitsOut] = fDSQPSKDemodulator(symbolsOut, goldSeq, phi, delayEst);
+    [symbolsOut] = fChannel(nPaths, symbolsIn, delays, fadingCoefs, directions, snr(iSnr), array, goldSeq);
+    [delayEst] = fChannelEstimation(symbolsOut{desiredUserIndex}, goldSeq)
+    [bitsOut] = fDSQPSKDemodulator(symbolsOut{desiredUserIndex}, goldSeq, phi, delayEst);
     fImageSink(bitsOut, Q, x, y, snrDb(iSnr));
+    ber(iSnr) = sum(xor(bitsOut(:, 1), bitsIn(:, 1))) / length(bitsOut)
 end
+fImageSink(bitsIn, Q, x, y);
 flag = 1;
