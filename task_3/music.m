@@ -1,4 +1,4 @@
-function [doa] = music(array, covRx, goldSeq)
+function [doa] = music(array, covRx, goldSeq, nPaths)
 % Function: 
 %   - find the direction of arrival based on MUSIC algorithm
 %
@@ -17,17 +17,23 @@ function [doa] = music(array, covRx, goldSeq)
 mainlobe = [];
 azimuth = 0: 180;
 elevation = 0;
-costFun = zeros(length(azimuth), 1);
+nSignals = size(goldSeq, 2);
+costFun = zeros(nSignals, length(azimuth));
+% costFun = zeros(length(azimuth), 1);
 [nSourses, eigVectSignal] = detection(covRx);
 nExt = length(covRx) / length(array);
 shiftMatrix = [zeros(1, nExt); eye(nExt - 1) zeros(nExt - 1, 1)];
 goldSeqExtend = [goldSeq; zeros(size(goldSeq))];
+goldSeqExtend = repelem(goldSeqExtend, 1, nPaths');
 for iAzimuthAngle = azimuth
     spvComponent = spv(array, [iAzimuthAngle elevation], mainlobe);
     starManifold = kron(spvComponent, shiftMatrix) * goldSeqExtend;
-    costFun(iAzimuthAngle + 1) = 1 ./ (starManifold' * fpoc(eigVectSignal) * starManifold);
+    for iSignal = 1: nSignals
+    costFun(iSignal, iAzimuthAngle + 1) = 1 ./ (starManifold(:, iSignal)' * fpoc(eigVectSignal) * starManifold(:, iSignal));
+    end
+%     costFun(iAzimuthAngle + 1) = 1 ./ (starManifold' * fpoc(eigVectSignal) * starManifold);
 end
-[~, doaIndex] = maxk(costFun, nSourses);
+[~, doaIndex] = maxk(costFun', nSourses);
 doaAzimuth = doaIndex - 1;
 doa = [doaAzimuth elevation * ones(size(doaAzimuth))];
 doa = sortrows(doa, 1);

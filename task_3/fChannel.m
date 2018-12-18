@@ -33,6 +33,7 @@ pathCounter = 1;
 startCounter = 1;
 % nAnts = length(array);
 noise = cell(nSignals, 1);
+symbolsOut = cell(nSignals, 1);
 % gain of elements on users directions
 spvSources = spv(array, directions);
 for iSignal = 1: nSignals
@@ -54,6 +55,9 @@ for iSignal = 1: nSignals
     noise{iSignal} = (randn(length(symbolsIn), 1) + 1i * randn(length(symbolsIn), 1)) * powerNoise;
 end
 % noise = sqrt(varNoise) * (randn(length(symbolsIn), 1) + 1i * randn(length(symbolsIn), 1));
-symbolsOut = (spvSources * symbolsAll.').' + noise{1};
+for iSignal = 1: nSignals
+    symbolsOut{iSignal} = (spvSources * symbolsAll.').' + noise{iSignal};
+end
+% symbolsOut = (spvSources * symbolsAll.').' + noise{1};
 % symbolsOut = sum(symbolsUser, 2);
 end

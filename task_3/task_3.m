@@ -23,6 +23,7 @@ varNoise = 10 .^ (-snrDb / 10);
 snr = 10 .^ (snrDb / 10);
 x = zeros(nSignals, 1); y = zeros(nSignals, 1); Q = zeros(nSignals, 1);
 bitsIn = zeros(p, nSignals);
+desiredIndex = 1;
 %% Gold sequence
 symbolsIn = zeros((2 ^ (length(coeffs) - 1) - 1) * p / 2, nSignals);
 nPaths = [3; 1; 1];
@@ -48,14 +49,11 @@ for iSignal = 1: nSignals
     symbolsIn(:, iSignal) = fDSQPSKModulator(bitsIn(:, iSignal), goldSeq(:, iSignal), phi);
 end
 % fImageSink(bitsIn, Q, x, y);
-symbolsMatrix = zeros(nAnts * nExt, length(symbolsIn) / nChips);
 for iSnr = 1: nSnr
     [symbolsOut] = fChannel(nPaths, symbolsIn, delays, fadingCoefs, directions, snr(iSnr), array, goldSeq);
-    for iAnt = 1: nAnts
-        temp = symbolsOut(:, iAnt);
-        symbolsMatrix((iAnt - 1) * nExt + 1: iAnt * nExt, 1: 2: end - 1) = reshape(temp(1: length(temp) - nChips), nExt, (length(temp) - nChips) / nExt);
-        symbolsMatrix((iAnt - 1) * nExt + 1: iAnt * nExt, 2: 2: end) = reshape(temp(nChips + 1: length(temp)), nExt, (length(temp) - nChips) / nExt);
-    end
+    [delayEst] = fChannelEstimation(symbolsOut, goldSeq, nPaths);
+    % desired user index is 1
+    [symbolsMatrix] = data_vectorisation(symbolsOut{desiredIndex}, nAnts, nExt, nChips);
     covSymbol = symbolsMatrix * symbolsMatrix' / length(symbolsMatrix);
-    doa = music(array, covSymbol, goldSeq);
+    doa = music(array, covSymbol, goldSeq, nPaths);
 end

@@ -16,7 +16,7 @@ nSnr = length(snrDb);
 bitsIn = zeros(p, nSignals);
 ber = zeros(nSnr, nSignals);
 ber1 = zeros(nSnr, 1);
-delays = [mod(surIndex + foreIndex, 4); 4 + mod(surIndex + foreIndex, 5); 9 + mod(surIndex + foreIndex, 6); 8; 13];
+delays = [mod(surIndex + foreIndex, 4); 4 + mod(surIndex + foreIndex, 5); 9 + mod(surIndex + foreIndex, 6); 8; 13]
 fadingCoefs = [0.8; 0.4 * exp(1i * -40 / 180 * pi); 0.8 * exp(1i * 80 / 180 * pi); 0.5; 0.2];
 varNoise = 10 .^ (-snrDb / 10);
 x = zeros(nSignals, 1); y = zeros(nSignals, 1); Q = zeros(nSignals, 1);
@@ -49,4 +49,3 @@ for iSnr = 1: nSnr
 %     ber(iSnr, :) = sum(xor(bitsOut, bitsIn));
     ber1(iSnr) = sum(xor(bitsOut(:, 1), bitsIn(:, 1))) / length(bitsOut)
 end
-tilefigs([0 0.5 0.8 0.5]);   % display all the figures in the top half of the screen
