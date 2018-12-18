@@ -8,7 +8,7 @@ end
 azimuth = 0: 180;
 elevation = 0;
 directions = [30 0; 45 0; 20 0; 80 0; 150 0];
-snrDb = [40 40];
+snrDb = [0 40];
 nSnr = length(snrDb);
 surIndex = 26;
 foreIndex = 25;
@@ -23,7 +23,7 @@ varNoise = 10 .^ (-snrDb / 10);
 snr = 10 .^ (snrDb / 10);
 x = zeros(nSignals, 1); y = zeros(nSignals, 1); Q = zeros(nSignals, 1);
 bitsIn = zeros(p, nSignals);
-desiredIndex = 1;
+desiredUserIndex = 1;
 %% Gold sequence
 symbolsIn = zeros((2 ^ (length(coeffs) - 1) - 1) * p / 2, nSignals);
 nPaths = [3; 1; 1];
@@ -53,7 +53,7 @@ for iSnr = 1: nSnr
     [symbolsOut] = fChannel(nPaths, symbolsIn, delays, fadingCoefs, directions, snr(iSnr), array, goldSeq);
     [delayEst] = fChannelEstimation(symbolsOut, goldSeq, nPaths);
     % desired user index is 1
-    [symbolsMatrix] = data_vectorisation(symbolsOut{desiredIndex}, nAnts, nExt, nChips);
+    [symbolsMatrix] = data_vectorisation(symbolsOut{desiredUserIndex}, nAnts, nExt, nChips);
     covSymbol = symbolsMatrix * symbolsMatrix' / length(symbolsMatrix);
     doa = music(array, covSymbol, goldSeq, nPaths);
 end
