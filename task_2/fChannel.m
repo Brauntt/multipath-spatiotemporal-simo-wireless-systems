@@ -97,7 +97,7 @@ for iSignal = 1: nSignals
     startCounter = pathCounter;
     powerSignal = sum(abs(symbolsIdeal).^2) / length(symbolsIdeal);
     powerNoise = powerSignal / snr;
-    noise{iSignal} = (randn(length(symbolsIn), 1) + 1i * randn(length(symbolsIn), 1)) * powerNoise;
+    noise{iSignal} = (randn(length(symbolsIn), 1) + 1i * randn(length(symbolsIn), 1)) * sqrt(powerNoise / 2);
 end
 % noise = sqrt(varNoise) * (randn(length(symbolsIn), 1) + 1i * randn(length(symbolsIn), 1));
 for iSignal = 1: nSignals

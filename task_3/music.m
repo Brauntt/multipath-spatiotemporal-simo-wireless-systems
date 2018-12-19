@@ -1,4 +1,4 @@
-function [doa] = music(array, covRx, goldSeq, nPaths)
+function [doaEst, delayEst] = music(array, covRx, goldSeq, nPaths)
 % Function: 
 %   - find the direction of arrival based on MUSIC algorithm
 %
@@ -48,7 +48,6 @@ for iSignal = 1: nSignals
     [doaEst{iSignal}, delayEst{iSignal}] = ind2sub(size(costFunSub), tempIndex);
     doaEst{iSignal} = doaEst{iSignal} - 1;
 end
-% [~, doaIndex] = maxk(costFun', nSourses);
-doaAzimuth = doaIndex - 1;
-doa = [doaAzimuth elevation * ones(size(doaAzimuth))];
-doa = sortrows(doa, 1);
+doaEst = cell2mat(doaEst);
+delayEst = cell2mat(delayEst);
+end
