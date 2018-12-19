@@ -51,7 +51,7 @@ end
 % fImageSink(bitsIn, Q, x, y);
 for iSnr = 1: nSnr
     [symbolsOut] = fChannel(nPaths, symbolsIn, delays, fadingCoefs, directions, snr(iSnr), array, goldSeq);
-    [delayEst] = fChannelEstimation(symbolsOut, goldSeq, nPaths);
+%     [delayEst] = fChannelEstimation(symbolsOut{desiredUserIndex}, goldSeq, nPaths)
     % desired user index is 1
     [symbolsMatrix] = data_vectorisation(symbolsOut{desiredUserIndex}, nAnts, nExt, nChips);
     covSymbol = symbolsMatrix * symbolsMatrix' / length(symbolsMatrix);
