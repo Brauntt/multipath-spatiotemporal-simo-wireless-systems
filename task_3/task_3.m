@@ -61,7 +61,8 @@ for iSnr = 1: nSnr
     [symbolsMatrix] = data_vectorisation(symbolsOut{desiredUserIndex}, nAnts, nExt, nChips);
     covSymbol = symbolsMatrix * symbolsMatrix' / length(symbolsMatrix);
     [doaEst, delayEst] = music(array, covSymbol, goldSeq, nPaths)
-    [bitsOut] = fDSQPSKDemodulator(symbolsOut{desiredUserIndex}, goldSeq, phi, delayEst, nPaths, fadingCoefs);
+    [~, weightSuperres] = superres(array, doaEst(desiredUserIndex, :), doaEst);
+    [bitsOut] = fDSQPSKDemodulator(symbolsOut{desiredUserIndex}, weightSuperres, goldSeq, phi, delayEst, nPaths, fadingCoefs);
     fImageSink(bitsOut, Q, x, y, snrDb(iSnr));
     ber(iSnr) = sum(xor(bitsOut(:, 1), bitsIn(:, 1))) / length(bitsOut)
 end

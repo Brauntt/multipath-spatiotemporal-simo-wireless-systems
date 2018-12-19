@@ -14,7 +14,8 @@
 % bitsOut (Px1 Integers) = P demodulated bits of 1's and 0's
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-function [bitsOut] = fDSQPSKDemodulator(symbolsOut, goldSeq, phi, delayEst, nPaths, fadingCoefs)
+function [bitsOut] = fDSQPSKDemodulator(symbolsOut, weightSuperres, goldSeq, phi, delayEst, nPaths, fadingCoefs)
+symbolsOut = symbolsOut * conj(weightSuperres);
 % nRelativeDelays = length(goldSeq) = number of possible delays
 [nRelativeDelays, nSignals] = size(goldSeq);
 nSymbols = (length(symbolsOut) - nRelativeDelays) / nRelativeDelays;
@@ -29,6 +30,7 @@ for iSignal = 1: nSignals
         symbolCut(:, iPath) = temp(1: length(symbolsOut) - nRelativeDelays);
         symbolPath(:, iPath) = reshape(symbolCut(:, iPath), nRelativeDelays, nSymbols).' * goldSeq(:, iSignal);
         weightMrc(iPath) = fadingCoefs(pathCounter)';
+%         weightMrc(iPath) = 1;
         pathCounter = pathCounter + 1;
     end
     symbol(:, iSignal) = sum(symbolPath .* weightMrc.', 2);

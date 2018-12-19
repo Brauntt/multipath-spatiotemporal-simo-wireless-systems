@@ -28,10 +28,8 @@ function [symbolsOut] = fChannel(nPaths, symbolsIn, delays, fadingCoefs, directi
 symbolsIn(length(symbolsIn) + nRelativeDelays, nSignals) = 0;
 symbolsUser = zeros(size(symbolsIn));
 symbolsAll = zeros(length(symbolsIn), sum(nPaths));
-% noise = zeros(size(symbolsIn));
 pathCounter = 1;
 startCounter = 1;
-% nAnts = length(array);
 noise = cell(nSignals, 1);
 symbolsOut = cell(nSignals, 1);
 % gain of elements on users directions
@@ -40,10 +38,6 @@ for iSignal = 1: nSignals
     symbolsPath = zeros(length(symbolsIn), nPaths(iSignal));
     for iPath = 1: nPaths(iSignal)
         symbolsPath(:, iPath) = fadingCoefs(pathCounter) * circshift(symbolsIn(:, iSignal), delays(pathCounter));
-%         noise = 0;
-%         noise = fadingCoefs(pathCounter) * sqrt(varNoise) / sqrt(2) * (randn(length(symbolsIn), 1) + 1i * randn(length(symbolsIn), 1));
-%         noise = sqrt(varNoise) * (randn(length(symbolsIn), 1) + 1i * randn(length(symbolsIn), 1));
-%         symbolsPath(:, iPath) = symbolsPath(:, iPath) + noise;
         symbolsAll(:, pathCounter) = symbolsPath(:, iPath);
         pathCounter = pathCounter + 1;
     end
@@ -54,10 +48,8 @@ for iSignal = 1: nSignals
     powerNoise = powerSignal / snr;
     noise{iSignal} = (randn(length(symbolsIn), 1) + 1i * randn(length(symbolsIn), 1)) * sqrt(powerNoise / 2);
 end
-% noise = sqrt(varNoise) * (randn(length(symbolsIn), 1) + 1i * randn(length(symbolsIn), 1));
 for iSignal = 1: nSignals
     symbolsOut{iSignal} = (spvSources * symbolsAll.').' + noise{iSignal};
+%     symbolsOut{iSignal} = (spvSources * symbolsAll.').';
 end
-% symbolsOut = (spvSources * symbolsAll.').' + noise{1};
-% symbolsOut = sum(symbolsUser, 2);
 end

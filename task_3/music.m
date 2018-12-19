@@ -48,6 +48,6 @@ for iSignal = 1: nSignals
     [doaEst{iSignal}, delayEst{iSignal}] = ind2sub(size(costFunSub), tempIndex);
     doaEst{iSignal} = doaEst{iSignal} - 1;
 end
-doaEst = cell2mat(doaEst);
+doaEst = [cell2mat(doaEst), zeros(length(cell2mat(doaEst)), 1)];
 delayEst = cell2mat(delayEst);
 end
