@@ -14,7 +14,6 @@ function [doaEst, delayEst] = music(array, covRx, goldSeq, nPaths)
 %   - the value of the cost function should approach zero at doa
 %
 % Author & Date: Yang (i@snowztail.com) - 27 Nov 18
-mainlobe = [];
 azimuth = 0: 180;
 elevation = 0;
 [nRelativeDelays, nSignals] = size(goldSeq);
@@ -27,18 +26,18 @@ doaEst = cell(nSignals, 1);
 % costFun = zeros(length(azimuth), 1);
 % starManifold = cell(nRelativeDelays, 1);
 [~, eigVectSignal] = detection(covRx);
-% nExt = length(covRx) / length(array);
 shiftMatrix = [zeros(1, 2 * nChips); eye(2 * nChips - 1) zeros(2 * nChips - 1, 1)];
 goldSeqExtend = [goldSeq; zeros(size(goldSeq))];
 % goldSeqExtend = repelem(goldSeqExtend, 1, nPaths');
 for iSignal = 1: nSignals
     for iAzimuth = azimuth
-        spvComponent = spv(array, [iAzimuth elevation], mainlobe);
+        spvComponent = spv(array, [iAzimuth elevation]);
         %     starManifold = kron(spvComponent, shiftMatrix) * goldSeqExtend;
         %     for iSignal = 1: nSignals
         %     costFun(iSignal, iAzimuthAngle + 1) = 1 ./ (starManifold(:, iSignal)' * fpoc(eigVectSignal) * starManifold(:, iSignal));
         %     end
         for iDelay = 1: nRelativeDelays
+%             starManifold = kron(spvComponent, shiftMatrix ^ iDelay) * goldSeqExtend(:, iSignal);
             starManifold = kron(spvComponent, shiftMatrix ^ iDelay * goldSeqExtend(:, iSignal));
             costFunSub(iAzimuth + 1, iDelay) = 1 ./ (starManifold' * fpoc(eigVectSignal) * starManifold);
         end
