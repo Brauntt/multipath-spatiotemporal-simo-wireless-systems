@@ -39,7 +39,6 @@ shiftMin = ceil(1 + mod(surIndex + foreIndex, 12));
 [shift] = miner(mSeq1, mSeq2, shiftMin);
 goldSeq = zeros(2 ^ (length(coeffs) - 1) - 1, nSignals);
 nChips = length(goldSeq);
-nExt = 2 * nChips;
 ber = zeros(nSnr, 1);
 % shiftMatrix = [zeros(1, nExt); eye(nExt - 1) zeros(nExt - 1, 1)];
 %% Signal generation
@@ -58,7 +57,7 @@ for iSnr = 1: nSnr
     [symbolsOut] = fChannel(nPaths, symbolsIn, delays, fadingCoefs, directions, snr(iSnr), array, goldSeq);
 %     [delayEst] = fChannelEstimation(symbolsOut{desiredUserIndex}, goldSeq, nPaths)
     % desired user index is 1
-    [symbolsMatrix] = data_vectorisation(symbolsOut{desiredUserIndex}, nAnts, nExt, nChips);
+    [symbolsMatrix] = data_vectorisation(symbolsOut{desiredUserIndex}, nAnts, nChips);
     covSymbol = symbolsMatrix * symbolsMatrix' / length(symbolsMatrix);
     [doaEst, delayEst] = music(array, covSymbol, goldSeq, nPaths)
     [~, weightSuperres] = superres(array, doaEst(desiredUserIndex, :), doaEst);

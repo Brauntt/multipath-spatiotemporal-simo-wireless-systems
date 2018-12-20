@@ -5,8 +5,8 @@ shift = phase_shift;
 phi = phi_mod * pi / 180;
 fadingCoefs = Beta_1;
 nPaths = length(fadingCoefs);
-signalSample = Xmatrix;
-[nAnts, nSnapshots] = size(signalSample);
+signalSample = Xmatrix';
+[nSnapshots, nAnts] = size(signalSample);
 initPhase = 30 / 180 * pi;
 array = zeros(nAnts, 3);
 for iAnt = 1: nAnts
@@ -16,7 +16,9 @@ end
 [mSeq1] = fMSeqGen(coeffs(1, :));
 [mSeq2] = fMSeqGen(coeffs(2, :));
 goldSeq = fGoldSeq(mSeq1, mSeq2, shift);
+nChips = length(goldSeq);
 %% Detection and estimation
-covSample = 1 / nSnapshots * (signalSample * signalSample');
+[symbolsMatrix] = data_vectorisation(signalSample, nAnts, nChips);
+covSample = symbolsMatrix * symbolsMatrix' / length(symbolsMatrix);
 [nSources] = detector_mdl(nSnapshots, covSample);
-[doaEst, delayEst] = music(array, covSample, goldSeq, nPaths);
+[doaEst, delayEst] = music(array, symbolsMatrix, covSample, goldSeq, nPaths);
