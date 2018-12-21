@@ -1,43 +1,57 @@
-% NAME, GROUP (EE4/MSc), 2010, Imperial College.
-% DATE
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Perform demodulation of the received data using <INSERT TYPE OF RECEIVER>
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Inputs
-% symbolsIn (Fx1 Integers) = R channel symbol chips received
-% goldseq (Wx1 Integers) = W bits of 1's and 0's representing the gold
-% sequence of the desired signal to be used in the demodulation process
-% phi (Integer) = Angle index in degrees of the QPSK constellation points
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Outputs
-% bitsOut (Px1 Integers) = P demodulated bits of 1's and 0's
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
 function [bitsOut] = fDSQPSKDemodulator(symbolsOut, goldSeq, phi, delayEst, nPaths, fadingCoefs)
-% nRelativeDelays = length(goldSeq) = number of possible delays
-[nRelativeDelays, nSignals] = size(goldSeq);
-nSymbols = (length(symbolsOut) - nRelativeDelays) / nRelativeDelays;
-symbol = zeros(nSymbols, nSignals);
+% Function:
+%   - perform demodulation of the received data
+%
+% InputArg(s):
+%   - symbolsOut: channel symbol chips received from each antenna
+%   - goldSeq: gold sequence used in the modulation process
+%   - phi: angle index in radian of the QPSK constellation points
+%   - delayEst: estimated delay of the signals
+%   - nPaths: number of paths for each source
+%   - fadingCoefs: fading coefficients for each path
+%
+% OutputArg(s):
+%   - bitsOut: demodulated bits
+%
+% Comments:
+%   - demap the symbols by angle rather than distance
+%
+% Author & Date: Yang (i@snowztail.com) - 21 Dec 18
+
+% obtain the maximum possible relative delay and number of signals
+[nDelays, nSignals] = size(goldSeq);
+% number of signal symbols
+nSymbols = (length(symbolsOut) - nDelays) / nDelays;
+% weighted symbols by maximum ratio combining
+symbolWeighted = zeros(nSymbols, nSignals);
+% output bits
+bitsOut = zeros(2 * nSymbols, nSignals);
+% initialise the path counter
 pathCounter = 1;
 for iSignal = 1: nSignals
-    symbolCut = zeros(length(symbolsOut) - nRelativeDelays, nPaths(iSignal));
-    symbolPath = zeros(nSymbols, nPaths(iSignal));
+    % despreaded symbols
+    symbolDespread = zeros(nSymbols, nPaths(iSignal));
     weightMrc = zeros(nPaths(iSignal), 1);
     for iPath = 1: nPaths(iSignal)
-        temp = circshift(symbolsOut, -delayEst(pathCounter));
-        symbolCut(:, iPath) = temp(1: length(symbolsOut) - nRelativeDelays);
-        symbolPath(:, iPath) = reshape(symbolCut(:, iPath), nRelativeDelays, nSymbols).' * goldSeq(:, iSignal);
+        % synced symbols
+        symbolsSync = circshift(symbolsOut, -delayEst(pathCounter));
+        % despread symbols
+        symbolDespread(:, iPath) = reshape(symbolsSync(1: length(symbolsOut) - nDelays), nDelays, nSymbols).' * goldSeq(:, iSignal);
+        % MRC weight is the complex conjugate of fading coefficients
         weightMrc(iPath) = fadingCoefs(pathCounter)';
+        % update the path counter
         pathCounter = pathCounter + 1;
     end
-    symbol(:, iSignal) = sum(symbolPath .* weightMrc.', 2);
+    % calculate the weighted signal symbols
+    symbolWeighted(:, iSignal) = sum(symbolDespread .* weightMrc.', 2);
 end
-bitsOut = zeros(2 * nSymbols, nSignals);
-angleSymbols = [phi, phi + pi / 2, phi - pi, phi - pi / 2];
+% symbol angles in QPSK modulation
+angleQpsk = [phi, phi + pi / 2, phi - pi, phi - pi / 2];
+% demodulate symbols by angle
 for iSignal = 1: nSignals
     for iSymbol = 1: nSymbols
-        [~, pos] = min(abs(angle(symbol(iSymbol, iSignal)) - angleSymbols));
+        % regard the symbol as the pattern with minimum angle difference
+        [~, pos] = min(abs(angle(symbolWeighted(iSymbol, iSignal)) - angleQpsk));
         if pos == 1
             bitsOut(2 * iSymbol - 1: 2 * iSymbol, iSignal) = [0; 0];
         elseif pos == 2

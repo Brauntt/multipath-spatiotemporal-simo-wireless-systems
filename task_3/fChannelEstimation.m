@@ -1,49 +1,69 @@
-% NAME, GROUP (EE4/MSc), 2010, Imperial College.
-% DATE
+function [doaEst, delayEst] = fChannelEstimation(array, symbolsOut, goldSeq, nPaths)
+% Function:
+%   - perform channel estimation for the desired source using the received
+%  signal
+%
+% InputArg(s):
+%   - symbolsOut: channel symbol chips received
+%   - goldSeq: gold sequence used in the modulation process
+%   - nPaths: number of paths for each source
+%
+% OutputArg(s):
+%   - doaEst: estimated direction of arrival of the signal paths
+%   - delayEst: estimated delay of the signal paths
+%
+% Comments:
+%   - number of paths for each source should be known
+%
+% Author & Date: Yang (i@snowztail.com) - 21 Dec 18
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Performs channel estimation for the desired source using the received signal
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Inputs
-% symbolsIn (Fx1 Complex) = R channel symbol chips received
-% goldseq (Wx1 Integers) = W bits of 1's and 0's representing the gold
-% sequence of the desired source used in the modulation process!!!!!!
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Outputs
-% delay_estimate = Vector of estimates of the delays of each path of the
-% desired signal
-% DOA_estimate = Estimates of the azimuth and elevation of each path of the
-% desired signal
-% beta_estimate = Estimates of the fading coefficients of each path of the
-% desired signal
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-function [delayEst] = fChannelEstimation(symbolsOut, goldSeq, nPaths)
-[nRelativeDelays, nSignals] = size(goldSeq);
-delayMax = 10 * nRelativeDelays;
-corFun = zeros(delayMax, nSignals);
-for iDelay = 1: delayMax
-    corFun(iDelay, :) = abs(symbolsOut(iDelay: iDelay + nRelativeDelays - 1).' * goldSeq);
-end
-pathCounter = 1;
-delayEst = zeros(sum(nPaths), 1);
+% possible azimuth and elevation angles of arrival
+azimuth = 0: 180; elevation = 0;
+% obtain the maximum possible relative delay and number of signals
+[nDelays, nSignals] = size(goldSeq);
+% chip length
+nChips = length(goldSeq);
+% number of receiving antennas
+nAnts = length(array);
+% cost function
+costFun = zeros(length(azimuth), nDelays);
+% estimated DOA of each signal
+doaEst = cell(nSignals, 1);
+% estimated delay of each signal
+delayEst = cell(nSignals, 1);
+% data vectorisation
+[symbolsMatrix] = data_vectorisation(symbolsOut, nAnts, nChips);
+% covariance matrix of symbol matrix
+covSymbol = symbolsMatrix * symbolsMatrix' / length(symbolsMatrix);
+% signal eigenvectors detection
+[~, eigVectSignal] = detection(covSymbol);
+% shifting matrix
+shiftMatrix = [zeros(1, 2 * nChips); eye(2 * nChips - 1) zeros(2 * nChips - 1, 1)];
+% extend the gold sequence by padding zeros to double length
+goldSeqExtend = [goldSeq; zeros(size(goldSeq))];
 for iSignal = 1: nSignals
-% [~, delayIndex] = maxk(corFun(:, iSignal), nPaths(iSignal));
-% delayEst(pathCounter: pathCounter + nPaths(iSignal) - 1) = sort(delayIndex) - 1;
-[~, delayIndex] = sort(corFun(:, iSignal), 'descend');
-temp = unique(mod(delayIndex, nRelativeDelays), 'stable');
-delayEst(pathCounter: pathCounter + nPaths(iSignal) - 1) = sort(temp(1: nPaths(iSignal))) - 1;
-pathCounter = pathCounter + nPaths(iSignal);
+    for iAzimuth = azimuth
+        % the corresponding manifold vector
+        spvComponent = spv(array, [iAzimuth elevation]);
+        for iDelay = 1: nDelays
+            % spatio-temporal array manifold
+            starManifold = kron(spvComponent, shiftMatrix ^ iDelay * goldSeqExtend(:, iSignal));
+            % the corresponding cost function
+            costFun(iAzimuth + 1, iDelay) = 1 ./ (starManifold' * fpoc(eigVectSignal) * starManifold);
+        end
+    end
+    % sort the cost function indexes
+    [~, sortIndex] = sort(costFun(:), 'descend');
+    % the few maximum 1-D indexes
+    columnIndex = sortIndex(1: nPaths(iSignal));
+    % convert to 2-D to obtain corresponding DOA and delays
+    [doaEst{iSignal}, delayEst{iSignal}] = ind2sub(size(costFun), columnIndex);
+    % convert indexes to real delays
+    doaEst{iSignal} = doaEst{iSignal} - 1;
 end
+% store the estimations in matrices as required
+doaEst = [cell2mat(doaEst), zeros(length(cell2mat(doaEst)), 1)];
+delayEst = cell2mat(delayEst);
+% set the invalid estimation as zero
+delayEst(delayEst < 0) = 0;
 end
-
-% for iSignal = 1: nSignals
-%    for iPath = 1: nPaths(iSignal)
-%        corFun = zeros(nDelays, 1);
-%        for iDelay = 1: nDelays
-%            corFun(iDelay) = abs(symbolsOut(iDelay: iDelay + nDelays - 1).' * goldSeq(:, iSignal));
-%        end
-%        [~, delayEst] = maxk(corFun, );
-%    end
-% end
-% end
