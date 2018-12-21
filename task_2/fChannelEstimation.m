@@ -19,6 +19,22 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 function [delayEst] = fChannelEstimation(symbolsOut, goldSeq, nPaths)
+% Function:
+%   - perform channel estimation for the desired source using the received 
+%  signal
+%
+% InputArg(s):
+%   - symbolsOut: channel symbol chips received
+%   - goldSeq: gold sequence used in the modulation process
+%   - nPaths: angle index in radian of the QPSK constellation points
+%
+% OutputArg(s):
+%   - symbolsIn: channel symbol chips after DS-QPSK Modulation
+%
+% Comments:
+%   - symbol power is set as 2 as required
+%
+% Author & Date: Yang (i@snowztail.com) - 21 Dec 18
 [nRelativeDelays, nSignals] = size(goldSeq);
 delayMax = 10 * nRelativeDelays;
 corFun = zeros(delayMax, nSignals);
@@ -37,13 +53,3 @@ pathCounter = pathCounter + nPaths(iSignal);
 end
 end
 
-% for iSignal = 1: nSignals
-%    for iPath = 1: nPaths(iSignal)
-%        corFun = zeros(nDelays, 1);
-%        for iDelay = 1: nDelays
-%            corFun(iDelay) = abs(symbolsOut(iDelay: iDelay + nDelays - 1).' * goldSeq(:, iSignal));
-%        end
-%        [~, delayEst] = maxk(corFun, );
-%    end
-% end
-% end

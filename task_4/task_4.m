@@ -21,4 +21,4 @@ nChips = length(goldSeq);
 [symbolsMatrix] = data_vectorisation(signalSample, nAnts, nChips);
 covSample = symbolsMatrix * symbolsMatrix' / length(symbolsMatrix);
 [nSources] = detector_mdl(nSnapshots, covSample);
-[doaEst, delayEst] = music(array, symbolsMatrix, covSample, goldSeq, nPaths);
+[doaEst, delayEst] = musical(array, symbolsMatrix, covSample, goldSeq, nPaths);
