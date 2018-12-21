@@ -33,6 +33,7 @@ initPhase = 30 / 180 * pi;
 % receiver antenna array positions normalised to half wavelengths
 array = zeros(nAnts, 3);
 for iAnt = 1: nAnts
+    % array positions
     array(iAnt, :) = [cos(initPhase + (iAnt - 1) * 2 * pi / 5), sin(initPhase + (iAnt - 1) * 2 * pi / 5), 0];
 end
 % signal-to-noise ratio at the receiver end
@@ -60,25 +61,35 @@ disp(['Delays = ' num2str(delays')]);
 [shift] = miner(mSeq1, mSeq2, shiftMin);
 %% Transmitter, channel and receiver
 for iSignal = 1: nSignals
+    % generate gold sequences
     goldSeq(:, iSignal) = fGoldSeq(mSeq1, mSeq2, shift + iSignal - 1);
-%     fileName = ['t', num2str(iSignal), '.jpg'];
+    % declare file names
     fileName = ['pic_', num2str(iSignal), '.png'];
-%     fileName = [num2str(iSignal), '.jpg'];
+    % obtain the bit stream into the modulator
     [bitsIn(:, iSignal), xPixel(iSignal), yPixel(iSignal)] = fImageSource(fileName, bitsMax);
-    imageBits(iSignal) = xPixel(iSignal) * yPixel(iSignal) * 3 * 8;
-    % fImageSink(bitsIn, Q, x, y);
+    % calculate the image size in bits
+    imageBits(iSignal) = xPixel(iSignal) * yPixel(iSignal) * zPixel * bitInt;
+    % modulate the signal and encode with gold sequence
     symbolsIn(:, iSignal) = fDSQPSKModulator(bitsIn(:, iSignal), goldSeq(:, iSignal), phi);
 end
-% fImageSink(bitsIn, Q, x, y);
+% show the original picture
+fImageSink(bitsIn, imageBits, xPixel, yPixel);
 for iSnr = 1: nSnr
-    [symbolsOut] = fChannel(nPaths, symbolsIn, delays, fadingCoefs, directions, snr(iSnr), array, goldSeq);
-%     [delayEst] = fChannelEstimation(symbolsOut{desiredUserIndex}, goldSeq, nPaths)
-    % desired user index is 1
-    [symbolsMatrix] = data_vectorisation(symbolsOut{desiredIndex}, nAnts, nChips);
-    covSymbol = symbolsMatrix * symbolsMatrix' / length(symbolsMatrix);
-    [doaEst, delayEst] = music(array, covSymbol, goldSeq, nPaths)
-    [~, weightSuperres] = superres(array, doaEst(desiredIndex, :), doaEst);
-    [bitsOut] = fDSQPSKDemodulator(symbolsOut{desiredIndex}, weightSuperres, goldSeq, phi, delayEst, nPaths, fadingCoefs);
+    % model the channel effects in the system
+    [symbolsOut] = fChannel(nPaths, symbolsIn, delays, fadingCoefs, directions, snr(iSnr), array, nDelay);
+    % estimate the delay and DOA of paths of signals
+    [doaEst, delayEst] = fChannelEstimation(array, symbolsOut{desiredIndex}, goldSeq, nPaths);
+    % derive the weight of the superresolution beamformer
+    [weightSr] = super_resolution(array, doaEst(desiredIndex, :), doaEst);
+    % demodulate the received patterns
+    [bitsOut] = fDSQPSKDemodulator(symbolsOut{desiredIndex}, weightSr, goldSeq, phi, delayEst, nPaths, fadingCoefs);
+    % display the recovered pictures
     fImageSink(bitsOut, imageBits, xPixel, yPixel, snrDb(iSnr));
-    ber(iSnr) = sum(xor(bitsOut(:, 1), bitsIn(:, 1))) / length(bitsOut)
+    % calculate bit error rate of the desired signal
+    ber(iSnr) = sum(xor(bitsOut(:, desiredIndex), bitsIn(:, desiredIndex))) / length(bitsOut);
+    disp(['----------   SNR = ' num2str(snrDb(iSnr)) ' dB ----------']);
+    disp(['Estimated delays = ' num2str(delayEst')]);
+    disp(['Bit error rate (Source ' num2str(desiredIndex) ') = ' num2str(ber(iSnr))]);
 end
+% rearrange the positions of the figures
+tilefigs([0 0.5 0.8 0.5]);

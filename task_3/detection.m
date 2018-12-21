@@ -1,9 +1,9 @@
-function [nSources, eigVectSignal] = detection(covRx)
+function [nSources, eigVectSignal] = detection(covMatrix)
 % Function: 
 %   - detector for continous signal, based on eigendecomposition
 %
 % InputArg(s):
-%   - covRx: covariance matrix of the received signal
+%   - covMatrix: covariance matrix of the received signal
 %
 % OutputArg(s):
 %   - nSources: number of sources
@@ -20,16 +20,11 @@ function [nSources, eigVectSignal] = detection(covRx)
 %   - also obtain signal eigenvector to create subspace for MUSIC algorithm
 %
 % Author & Date: Yang (i@snowztail.com) - 27 Nov 18
-[eigVector, eigValue] = eig(covRx);
+
+[eigVector, eigValue] = eig(covMatrix);
 eigValue = abs(diag(eigValue));
 % assume max noise power / min noise power is below this ratio
 % TO BE DESIGNED BY ACTUAL CASES
-% if min(eigValue) >= 1e-5
-%     noiseRatioThr = 1.5;
-% else
-%     noiseRatioThr = 1e4;
-% end
-% eigNoiseThr = min(eigValue) * noiseRatioThr;
 eigNoiseThr = 0.01;
 nSources = sum(eigValue > eigNoiseThr);
 eigVectSignal = eigVector(:, eigValue > eigNoiseThr); 

@@ -1,4 +1,4 @@
-function [patternSuperres, weight] = superres(array, dirTarget, doa)
+function [weight] = super_resolution(array, dirTarget, doa)
 % Function: 
 %   - obtain the directional gains of the superresolution beamformer
 %
@@ -8,7 +8,6 @@ function [patternSuperres, weight] = superres(array, dirTarget, doa)
 %   - doa: direction of arrival
 %
 % OutputArg(s):
-%   - patternSuperres: directional gains in all directions
 %   - weight: the weight on receiving antennas
 %
 % Comments:
@@ -16,17 +15,14 @@ function [patternSuperres, weight] = superres(array, dirTarget, doa)
 %   suppress interference
 %
 % Author & Date: Yang (i@snowztail.com) - 27 Nov 18
-azimuth = 0: 180;
-elevation = 0;
-isLog = true;
+
+% obtain directions of interferences
 dirInterf = setdiff(doa, dirTarget, 'rows');
+% hence the manifold vector of interferences
 spvInterf = spv(array, dirInterf);
+% the manifold vector of the desired signal
 spvTarget = spv(array, dirTarget);
-spvAll = spv(array, [azimuth', elevation * ones(size(azimuth'))]);
+% weights of super-resolution beamformer
 weight = fpoc(spvInterf) * spvTarget;
-patternSuperres = abs(weight' * spvAll);
-if isLog == true
-    patternSuperres = 10 * log10(patternSuperres);
-end
 end
 

@@ -67,7 +67,7 @@ fImageSink(bitsIn, imageBits, xPixel, yPixel);
 for iSnr = 1: nSnr
     % model the channel effects in the system
     [symbolsOut] = fChannel(nPaths, symbolsIn, delays, fadingCoefs, directions, snr(iSnr), array, nDelay);
-    % estimate the delay of the desired signal
+    % estimate the delay of paths of signals
     [delayEst] = fChannelEstimation(symbolsOut{desiredIndex}, goldSeq, nPaths);
     % demodulate the received patterns
     [bitsOut] = fDSQPSKDemodulator(symbolsOut{desiredIndex}, goldSeq, phi, delayEst, nPaths, fadingCoefs);
@@ -79,5 +79,5 @@ for iSnr = 1: nSnr
     disp(['Estimated delays = ' num2str(delayEst')]);
     disp(['Bit error rate (Source ' num2str(desiredIndex) ') = ' num2str(ber(iSnr))]);
 end
-% display all the figures in the top half of the screen
+% rearrange the positions of the figures
 tilefigs([0 0.5 0.8 0.5]);
