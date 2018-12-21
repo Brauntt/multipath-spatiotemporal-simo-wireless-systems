@@ -37,35 +37,39 @@ for iPos = 1: 2 * nChips
 end
 % z1
 transformMatrix = kron(eye(nAnts), diag(ftMatrix * goldSeqExtend) \  ftMatrix);
-diagMatrix = transformMatrix * transformMatrix';
 % z1[n]
 tfSignal = transformMatrix * symbolsMatrix;
 nVectors = size(tfSignal,2);
-covSmooth = 0;
+covSmoothSignal = 0;
+covSmoothTf = 0;
 % Q = nPaths
 subvectLength = 2 * nChips + 1 - nPaths;
 phiSub = phiVect(1: subvectLength);
-for iVector = 1: 1
-    subVect = cell(nAnts, nPaths);
-    vect = reshape(tfSignal(:, iVector), nAnts, 2 * nChips);
-    for iAnt = 1: nAnts
-        for iPath = 1: nPaths
-            subVect{iAnt, iPath} = vect(iAnt, iPath: iPath + subvectLength - 1);
-        end
-    end
-    subVect = cell2mat(subVect');
+subVectSignal = cell(nAnts, nPaths);
+subVectTf = cell(nAnts, nPaths);
+vectSignal = reshape(tfSignal(:, 1), nAnts, 2 * nChips);
+vectTf = reshape(diag(transformMatrix * transformMatrix'), nAnts, 2 * nChips);
+for iAnt = 1: nAnts
     for iPath = 1: nPaths
-        covSmooth = covSmooth + (1 / nPaths) * (subVect(iPath, :)' * subVect(iPath, :)) / length(subVect(iPath, :));
+        subVectSignal{iAnt, iPath} = vectSignal(iAnt, iPath: iPath + subvectLength - 1);
+        subVectTf{iAnt, iPath} = vectTf(iAnt, iPath: iPath + subvectLength - 1);
     end
-    [nSources, eigVectSignal] = detection(covSmooth);
 end
+subVectSignal = cell2mat(subVectSignal');
+subVectTf = cell2mat(subVectTf');
+for iPath = 1: nPaths
+    covSmoothSignal = covSmoothSignal + (1 / nPaths) * (subVectSignal(iPath, :)' * subVectSignal(iPath, :)) / length(subVectSignal(iPath, :));
+    covSmoothTf = covSmoothTf + (1 / nPaths) * (subVectTf(iPath, :)' * subVectTf(iPath, :)) / length(subVectTf(iPath, :));
+end
+[nSources, eigVectSignal] = detection(covSmoothSignal);
+[nSources, eigVectTf] = detection(covSmoothTf);
 for iSignal = 1: nSignals
     for iAzimuth = azimuth
         spvComponent = spv(array, [iAzimuth elevation]);
         for iDelay = 1: nRelativeDelays
             %         starManifold = kron(spvComponent, shiftMatrix ^ iDelay * goldSeqExtend);
             starManifold = kron(spvComponent, phiSub .^ iDelay);
-            costFunSub(iAzimuth + 1, iDelay) = 1 ./ (starManifold' * fpoc(eigVectSignal) * starManifold);
+            costFunSub(iAzimuth + 1, iDelay) = 1 ./ (starManifold' * fpoc([eigVectSignal eigVectTf]) * starManifold);
         end
     end
     costFun{iSignal} = costFunSub;
