@@ -74,7 +74,7 @@ for iSignal = 1: nSignals
 end
 for iSignal = 1: nSignals
     % produces multiple output symbol streams with noise level based on
-    % ifferent target signals
+    % different target signals
     symbolsOut{iSignal} = (spvSources * symbolsPath.').' + noise{iSignal};
 end
 end

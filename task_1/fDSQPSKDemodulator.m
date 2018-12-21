@@ -35,6 +35,7 @@ angleQpsk = [phi, phi + pi / 2, phi - pi, phi - pi / 2];
 % demodulate symbols by angle
 for iSignal = 1: nSignals
     for iSymbol = 1: nSymbols
+        % regard the symbol as the pattern with minimum angle difference
         [~, pos] = min(abs(angle(symbolDespread(iSymbol, iSignal)) - angleQpsk));
         if pos == 1
             bitsOut(2 * iSymbol - 1: 2 * iSymbol, iSignal) = [0; 0];

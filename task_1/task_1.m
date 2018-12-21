@@ -3,10 +3,13 @@ clear;close all;
 % name indexes
 surIndex = 26;
 foreIndex = 25;
+% convention
+zPixel = 3;
+bitInt = 8;
 % maximum size of picture
 widthMax = 160;
 heightMax = 112;
-bitsMax = widthMax * heightMax * 3 * 8;
+bitsMax = widthMax * heightMax * zPixel * bitInt;
 % number of signals
 nSignals = 3;
 % desired signal index
@@ -23,7 +26,7 @@ nPaths = [1; 1; 1];
 fadingCoefs = [0.4; 0.7; 0.2];
 % path delays
 delays = [5; 7; 12];
-% receiving antenna array positions
+% receiver antenna array positions
 array = [0 0 0];
 % signal-to-noise ratio at the receiver end
 snrDb = [0 40];
@@ -39,9 +42,6 @@ bitsIn = zeros(bitsMax, nSignals);
 symbolsIn = zeros((2 ^ (length(coeffs) - 1) - 1) * bitsMax / 2, nSignals);
 ber = zeros(nSnr, 1);
 goldSeq = zeros(2 ^ (length(coeffs) - 1) - 1, nSignals);
-% convention
-zPixel = 3;
-bitInt = 8;
 disp(['Delays = ' num2str(delays')]);
 %% Balanced gold sequence mining
 % generate M-sequences
@@ -50,19 +50,21 @@ disp(['Delays = ' num2str(delays')]);
 % calculate the minimum shift for balanced gold sequence
 [shift] = miner(mSeq1, mSeq2, shiftMin);
 %% Transmitter, channel and receiver
+for iSignal = 1: nSignals
+    % generate gold sequences
+    goldSeq(:, iSignal) = fGoldSeq(mSeq1, mSeq2, shift + iSignal - 1);
+    % declare file names
+    fileName = ['pic_', num2str(iSignal), '.png'];
+    % obtain the bit stream into the modulator
+    [bitsIn(:, iSignal), xPixel(iSignal), yPixel(iSignal)] = fImageSource(fileName, bitsMax);
+    % calculate the image size in bits
+    imageBits(iSignal) = xPixel(iSignal) * yPixel(iSignal) * zPixel * bitInt;
+    % modulate the signal and encode with gold sequence
+    symbolsIn(:, iSignal) = fDSQPSKModulator(bitsIn(:, iSignal), goldSeq(:, iSignal), phi);
+end
+% show the original picture
+fImageSink(bitsIn, imageBits, xPixel, yPixel);
 for iSnr = 1: nSnr
-    for iSignal = 1: nSignals
-        % generate gold sequences
-        goldSeq(:, iSignal) = fGoldSeq(mSeq1, mSeq2, shift + iSignal - 1);
-        % declare file names
-        fileName = ['pic_', num2str(iSignal), '.png'];
-        % obtain the bit stream into the modulator
-        [bitsIn(:, iSignal), xPixel(iSignal), yPixel(iSignal)] = fImageSource(fileName, bitsMax);
-        % calculate the image size in bits
-        imageBits(iSignal) = xPixel(iSignal) * yPixel(iSignal) * zPixel * bitInt;
-        % modulate the signal and encode with gold sequence
-        symbolsIn(:, iSignal) = fDSQPSKModulator(bitsIn(:, iSignal), goldSeq(:, iSignal), phi);
-    end
     % model the channel effects in the system
     [symbolsOut] = fChannel(nPaths, symbolsIn, delays, fadingCoefs, directions, snr(iSnr), array, nDelay);
     % estimate the delay of the desired signal
@@ -77,5 +79,5 @@ for iSnr = 1: nSnr
     disp(['Estimated delays = ' num2str(delayEst')]);
     disp(['Bit error rate (Source ' num2str(desiredIndex) ') = ' num2str(ber(iSnr))]);
 end
-% show the original picture
-fImageSink(bitsIn, imageBits, xPixel, yPixel);
+% display all the figures in the top half of the screen
+tilefigs([0 0.5 0.8 0.5]);

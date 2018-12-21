@@ -36,6 +36,6 @@ for iSignal = 1: nSignals
     % the first unique residue can suggest the delay
     delayEst(iSignal) = uniqueResidue(1) - 1;
 end
-% set the wrong estimation as zero
+% set the invalid estimation as zero
 delayEst(delayEst < 0) = 0;
 end
