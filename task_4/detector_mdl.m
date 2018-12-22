@@ -14,6 +14,7 @@ function [nSources] = detector_mdl(nSnapshots, covSample)
 %   - source count equals minimum index of the function minus one
 %
 % Author & Date: Yang (i@snowztail.com) - 27 Nov 18
+
 [~, eigValue] = eig(covSample);
 eigValue = sort(abs(diag(eigValue)));
 nReceivers = length(eigValue);
