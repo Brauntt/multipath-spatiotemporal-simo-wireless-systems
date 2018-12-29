@@ -1,12 +1,15 @@
-function [doaEst, delayEst] = fChannelEstimation(array, symbolsOut, goldSeq, nPaths)
+function [doaEst, delayEst] = fChannelEstimation(array, symbolsOut, goldSeq, nPaths, desiredNoisePower)
 % Function:
 %   - perform channel estimation for the desired source using the received
 %  signal
 %
 % InputArg(s):
+%   - array: array locations in half unit wavelength. If no array then
+%  should be [0,0,0]
 %   - symbolsOut: channel symbol chips received
 %   - goldSeq: gold sequence used in the modulation process
 %   - nPaths: number of paths for each source
+%   - desiredNoisePower: noise power added to desired signal
 %
 % OutputArg(s):
 %   - doaEst: estimated direction of arrival of the signal paths
@@ -36,7 +39,7 @@ delayEst = cell(nSignals, 1);
 % covariance matrix of symbol matrix
 covSymbol = symbolsMatrix * symbolsMatrix' / length(symbolsMatrix);
 % signal eigenvectors detection
-[~, eigVectSignal] = detection(covSymbol);
+[~, eigVectSignal] = detection(covSymbol, desiredNoisePower);
 % shifting matrix
 shiftMatrix = [zeros(1, 2 * nChips); eye(2 * nChips - 1) zeros(2 * nChips - 1, 1)];
 % extend the gold sequence by padding zeros to double length

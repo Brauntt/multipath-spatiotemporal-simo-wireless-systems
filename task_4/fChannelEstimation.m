@@ -4,6 +4,8 @@ function [doaEst, delayEst] = fChannelEstimation(array, symbolsOut, goldSeq, nPa
 %  signal
 %
 % InputArg(s):
+%   - array: array locations in half unit wavelength. If no array then
+%  should be [0,0,0]
 %   - symbolsOut: channel symbol chips received
 %   - goldSeq: gold sequence used in the modulation process
 %   - nPaths: number of paths for each source
@@ -44,8 +46,6 @@ delayEst = cell(nSignals, 1);
 % nSamples = size(symbolsMatrix, 2);
 % covariance matrix of symbol matrix
 covSymbol = symbolsMatrix * symbolsMatrix' / length(symbolsMatrix);
-% signal eigenvectors detection
-[~, eigVectSignal] = detection(covSymbol);
 % shifting matrix
 shiftMatrix = [zeros(1, 2 * nChips); eye(2 * nChips - 1) zeros(2 * nChips - 1, 1)];
 % extend the gold sequence by padding zeros to double length
@@ -74,6 +74,10 @@ for iSignal = 1: nSignals
     [covSmoothVect] = temporal_smooth(nSubVects, lenSubVect, nAnts, nChips, tfSignal);
     % smoothed covariance matrix of transformation
     [covSmoothTf] = temporal_smooth(nSubVects, lenSubVect, nAnts, nChips, tfMatrix * tfMatrix');
+    % combine to obtain overall smoothed covariance matrix
+    covSmooth = [covSmoothVect, diag(diag(covSmoothTf))];
+    % signal eigenvectors detection
+    [~, eigVectSignal] = detection(covSmooth);
     for iAzimuth = azimuth
         % the corresponding manifold vector
         spvComponent = spv(array, [iAzimuth elevation]);
