@@ -65,19 +65,24 @@ for iSignal = 1: nSignals
     % overall transformation matrix for certain signal
     tfMatrix = kron(eye(nAnts), diag(ftMatrix * goldSeqExtend(:, iSignal)) \  ftMatrix);
     % transformed signal
-    tfSignal = tfMatrix * symbolsMatrix;
+    tfSignal = tfMatrix * symbolsMatrix(:, 1);
     % number of space-time subvectors
     nSubVects = nPaths(iSignal);
     % length of space-time subvectors (d + Q - 1 <= 2 * Nc)
     lenSubVect = 2 * nChips + 1 - nSubVects;
     % signal on each antenna
-    tfSignalSplit = reshape(tfSignal(:, 1), nAnts, 2 * nChips);
+    tfSignalSplit = reshape(tfSignal, nAnts, 2 * nChips);
     for iSubVect = 1: nSubVects
        for iAnt = 1: nAnts
            subVect{iSubVect, iAnt} = tfSignalSplit(iAnt, iSubVect: iSubVect + lenSubVect - 1);
        end
     end
     subVect = cell2mat(subVect);
+    covSmooth = 0;
+    for iSubVect = 1: nSubVects
+       covSubVect = subVect(iSubVect, :)' * subVect(iSubVect, :) / length(subVect(iSubVect, :));
+       covSmooth = covSmooth + 1 / nSubVects * covSubVect;
+    end
     for iAzimuth = azimuth
         % the corresponding manifold vector
         spvComponent = spv(array, [iAzimuth elevation]);
