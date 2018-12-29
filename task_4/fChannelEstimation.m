@@ -40,8 +40,8 @@ doaEst = cell(nSignals, 1);
 delayEst = cell(nSignals, 1);
 % data vectorisation
 [symbolsMatrix] = data_vectorisation(symbolsOut, nAnts, nChips);
-% number of samples
-nSamples = size(symbolsMatrix, 2);
+% % number of samples
+% nSamples = size(symbolsMatrix, 2);
 % covariance matrix of symbol matrix
 covSymbol = symbolsMatrix * symbolsMatrix' / length(symbolsMatrix);
 % signal eigenvectors detection
@@ -67,33 +67,13 @@ for iSignal = 1: nSignals
     % transformed signal
     tfSignal = tfMatrix * symbolsMatrix;
     % number of space-time subvectors
-    nSubVects = nPaths(iSignal);
+    nSubVects = nPaths(iSignal);    
     % length of space-time subvectors (d + Q - 1 <= 2 * Nc)
     lenSubVect = 2 * nChips + 1 - nSubVects;
-    % subvector of certain sample 
-    subVectPiece = cell(nSubVects, nAnts);
-    % all subvectors
-    subVect = cell(nSamples, nSubVects);
-    % covariance matrix of subvectors
-    covSubVect = cell(nSubVects, 1);
-    for iSample = 1: nSamples
-        % transformed signal on each antenna
-        tfSignalSplit = reshape(tfSignal(:, iSample), nAnts, 2 * nChips);
-        for iSubVect = 1: nSubVects
-            for iAnt = 1: nAnts
-                % obtain subvector piece
-                subVectPiece{iSubVect, iAnt} = tfSignalSplit(iAnt, iSubVect: iSubVect + lenSubVect - 1);
-            end
-            % concatenate pieces for subvectors
-            subVect{iSample, iSubVect} = cell2mat(subVectPiece(iSubVect,:));
-        end
-    end
-    for iSubVect = 1: nSubVects
-        % calculate covariance matrices of subvectors
-       covSubVect{iSubVect} = cov(cell2mat(subVect(:, iSubVect)));
-    end
-    % smoothed covariance matrix
-    covSmooth = mean(cat(3, covSubVect{:}), 3);
+    % smoothed covariance matrix of signal
+    [covSmoothVect] = temporal_smooth(nSubVects, lenSubVect, nAnts, nChips, tfSignal);
+    % smoothed covariance matrix of transformation
+    [covSmoothTf] = temporal_smooth(nSubVects, lenSubVect, nAnts, nChips, tfMatrix * tfMatrix');
     for iAzimuth = azimuth
         % the corresponding manifold vector
         spvComponent = spv(array, [iAzimuth elevation]);
