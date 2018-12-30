@@ -42,10 +42,6 @@ doaEst = cell(nSignals, 1);
 delayEst = cell(nSignals, 1);
 % data vectorisation
 [symbolsMatrix] = data_vectorisation(symbolsOut, nAnts, nChips);
-% % number of samples
-% nSamples = size(symbolsMatrix, 2);
-% covariance matrix of symbol matrix
-covSymbol = symbolsMatrix * symbolsMatrix' / length(symbolsMatrix);
 % shifting matrix
 shiftMatrix = [zeros(1, 2 * nChips); eye(2 * nChips - 1), zeros(2 * nChips - 1, 1)];
 % extend the gold sequence by padding zeros to double length
@@ -66,14 +62,23 @@ for iSignal = 1: nSignals
     tfMatrix = kron(eye(nAnts), diag(ftMatrix * goldSeqExtend(:, iSignal)) \  ftMatrix);
     % transformed signal
     tfSignal = tfMatrix * symbolsMatrix;
+    % covariance matrix of transformed signal
+    covTfSignal = tfSignal * tfSignal' / size(tfSignal, 2);
+    % number of submatrices of spatial smoothing
+    nSubMats = nPaths(iSignal);
+    nSubMats = 2;
+    % first perform spatial smoothing of covariance matrix
+    [tfSignalSpatialSmooth] = spatial_smoothing(nSubMats, nAnts, covTfSignal);
     % number of space-time subvectors
     nSubVects = nPaths(iSignal);
     % length of space-time subvectors (d + Q - 1 <= 2 * Nc)
-    lenSubVect = 2 * nChips + 1 - nSubVects;
+    lenSubVect = 2 * nChips - 1 - nSubVects;
     % obtain Fourier transformation subvector
     ftSubVect = ftVect(1: lenSubVect);
-    % smoothed covariance matrix of signal
-    [covSmoothSignal] = temporal_smoothing(nSubVects, lenSubVect, nAnts, nChips, tfSignal);
+    % then perform temporal smoothing of the spatial smoothed result
+%     [covSmoothSignal] = temporal_smoothing(nSubVects, lenSubVect, nAnts, nChips, tfSignalSpatialSmooth);
+    [covSmoothSignal] = ts(nSubVects, lenSubVect, nAnts, nChips, tfSignalSpatialSmooth);
+    
     [covSmoothTf] = temporal_smoothing(nSubVects, lenSubVect, nAnts, nChips, tfMatrix * tfMatrix');
 %     % smoothed covariance matrix of transformation
 %     [covSmoothTf] = temporal_smoothing(nSubVects, lenSubVect, nAnts, nChips, tfMatrix * tfMatrix');

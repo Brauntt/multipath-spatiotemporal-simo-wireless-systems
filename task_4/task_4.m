@@ -33,8 +33,5 @@ end
 % gold sequence
 goldSeq = fGoldSeq(mSeq1, mSeq2, shift);
 %% Detection and estimation
-% [symbolsMatrix] = data_vectorisation(signalSample, nAnts, nChips);
-% covSample = symbolsMatrix * symbolsMatrix' / length(symbolsMatrix);
-% [doaEst, delayEst] = musical(array, symbolsMatrix, covSample, goldSeq, nPaths);
 % estimate the delay and DOA of paths of signals
 [doaEst, delayEst] = fChannelEstimation(array, signalSample, goldSeq, nPaths);

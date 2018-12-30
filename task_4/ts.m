@@ -1,4 +1,4 @@
-function [objTemporalSmooth] = temporal_smoothing(nSubVects, lenSubVect, nAnts, nChips, obj)
+function [objTemporalSmooth] = ts(nSubVects, lenSubVect, nAnts, nChips, obj)
 % Function: 
 %   - temporal smoothing
 %
