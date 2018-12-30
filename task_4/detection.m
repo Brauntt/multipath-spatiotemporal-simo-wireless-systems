@@ -1,39 +1,35 @@
-function [nSources, eigVectSignal] = detection(covMatrix)
+function [eigVectNoise] = detection(objA, objB)
 % Function: 
-%   - detector for continous signal, based on eigendecomposition
+%   - detect the generalised noise eigenvectors based on eigendecomposition
 %
 % InputArg(s):
-%   - covRx: covariance matrix of the received signal
+%   - objA: smoothed covariance matrix of signal
+%   - objB: diagonal matrix of smoothed covariance matrix of transformation
 %
 % OutputArg(s):
-%   - nSources: number of sources
-%   - eigVectorSignal: signal eigenvector
+%   - eigVectNoise: generalised noise eigenvectors
 %
 % Restraints:
 %   - Traditional detection is based on observations, where the criterion
 %   of regarding a eigenvalue as 'small' corresponding to noise is
-%   determined by human. In this case we use a simplified model that based
-%   on comparison: the threshold is defined by the minimum eigenvalue and a
-%   ratio. This ratio should be determined carefully. The precision of this
-%   function needs improvements.
-% Comments:
-%   - also obtain signal eigenvector to create subspace for MUSIC algorithm
+%   determined by noise power. In this case we use a simplified model based
+%   on comparison: the threshold is defined manually since the noise power
+%   is unknown. The precision of this function needs improvements.
 %
-% Author & Date: Yang (i@snowztail.com) - 27 Nov 18
-[eigVector, eigValue] = eig(covMatrix);
+% Comments:
+%   - also obtain noise eigenvector to create subspace for MUSIC algorithm
+%
+% Author & Date: Yang (i@snowztail.com) - 30 Dec 18
+
+[eigVector, eigValue] = eig(objA, objB);
 eigValue = abs(diag(eigValue));
-% assume max noise power / min noise power is below this ratio
-% TO BE DESIGNED BY ACTUAL CASES
-% if min(eigValue) >= 1e-5
-%     noiseRatioThr = 1.5;
-% else
-%     noiseRatioThr = 1e4;
-% end
-% eigNoiseThr = min(eigValue) * noiseRatioThr;
+% signal and noise eigenvalue threshold
 eigNoiseThr = 0.01;
-nSources = sum(eigValue > eigNoiseThr);
-eigVectSignal = eigVector(:, eigValue > eigNoiseThr); 
-% do not use noise eigenvector directly for noise subspace
-% noiseEigVector = eigVector(:, eigValue <= eigNoiseThr);
+% % estimated source number
+% nSourcesEst = sum(eigValue > eigNoiseThr);
+% signal eigenvector
+eigVectSignal = eigVector(:, eigValue > eigNoiseThr);
+% generalised noise eigenvector
+eigVectNoise = fpoc(eigVectSignal);
 end
 

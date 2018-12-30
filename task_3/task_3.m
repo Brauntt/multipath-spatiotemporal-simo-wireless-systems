@@ -76,9 +76,9 @@ end
 fImageSink(bitsIn, imageBits, xPixel, yPixel);
 for iSnr = 1: nSnr
     % model the channel effects in the system
-    [symbolsOut] = fChannel(nPaths, symbolsIn, delays, fadingCoefs, directions, snr(iSnr), array, nDelay);
+    [symbolsOut, desiredNoisePower] = fChannel(nPaths, symbolsIn, delays, fadingCoefs, directions, snr(iSnr), array, nDelay, desiredIndex);
     % estimate the delay and DOA of paths of signals
-    [doaEst, delayEst] = fChannelEstimation(array, symbolsOut{desiredIndex}, goldSeq, nPaths);
+    [doaEst, delayEst] = fChannelEstimation(array, symbolsOut{desiredIndex}, goldSeq, nPaths, desiredNoisePower);
     % derive the weight of the superresolution beamformer
     [weightSr] = super_resolution(array, doaEst(desiredIndex, :), doaEst);
     % demodulate the received patterns

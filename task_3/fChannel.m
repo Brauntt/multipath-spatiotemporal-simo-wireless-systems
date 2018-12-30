@@ -1,4 +1,4 @@
-function [symbolsOut] = fChannel(nPaths, symbolsIn, delays, fadingCoefs, directions, snr, array, nDelay)
+function [symbolsOut, desiredNoisePower] = fChannel(nPaths, symbolsIn, delays, fadingCoefs, directions, snr, array, nDelay, desiredIndex)
 % Function:
 %   - Model the channel effects in the system
 %
@@ -14,9 +14,11 @@ function [symbolsOut] = fChannel(nPaths, symbolsIn, delays, fadingCoefs, directi
 %   - array: array locations in half unit wavelength. If no array then
 %  should be [0,0,0]
 %   - nDelay: maximum possible relative delay
+%   - desiredIndex: desired signal index
 %
 % OutputArg(s):
 %   - symbolsOut: channel symbol chips received from each antenna
+%   - desiredNoisePower: noise power added to desired signal
 %
 % Comments:
 %   - each antenna receive different copies of signals
@@ -66,11 +68,15 @@ for iSignal = 1: nSignals
     % update the previous path counter
     pathCounterPrev = pathCounter;
     % calculate the desired signal power
-    powerSignal = sum(abs(symbolsDesired).^2) / length(symbolsDesired);
+    powerSignal = mean(sum(abs(symbolsDesired).^2) / length(symbolsDesired));
     % hence the noise power
     powerNoise = powerSignal / snr;
+    % obtain the noise power of the desired signal
+    if iSignal == desiredIndex
+       desiredNoisePower = powerNoise;
+    end
     % then generate noise accordingly
-    noise{iSignal} = (randn(length(symbolsIn), 1) + 1i * randn(length(symbolsIn), 1)) * sqrt(powerNoise / 2);
+    noise{iSignal} =  sqrt(powerNoise / 2) * (randn(size(symbolsDesired)) + 1i * randn(size(symbolsDesired)));
 end
 for iSignal = 1: nSignals
     % produces multiple output symbol streams with noise level based on
