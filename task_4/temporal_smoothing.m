@@ -19,10 +19,12 @@ function [covSmooth] = temporal_smoothing(nSubVects, lenSubVect, nAnts, nChips, 
 
 % number of samples
 nSamples = size(obj, 2);
-% subvector of certain sample
+% subvector pieces
 subVectPiece = cell(nSubVects, nAnts);
+% subvectors set
+subVectSet = cell(nSamples, nSubVects);
 % all subvectors
-subVect = cell(nSamples, nSubVects);
+subVect = cell(nSubVects, 1);
 % covariance matrix of subvectors
 covSubVect = cell(nSubVects, 1);
 for iSample = 1: nSamples
@@ -34,14 +36,14 @@ for iSample = 1: nSamples
             subVectPiece{iSubVect, iAnt} = tfSignalSplit(iAnt, iSubVect: iSubVect + lenSubVect - 1);
         end
         % concatenate pieces for subvectors
-        subVect{iSample, iSubVect} = cell2mat(subVectPiece(iSubVect,:));
+        subVectSet{iSample, iSubVect} = cell2mat(subVectPiece(iSubVect,:));
+        % convert elements to double
+        subVect{iSubVect} = cell2mat(subVectSet(:, iSubVect));
     end
 end
 for iSubVect = 1: nSubVects
-    % convert elements to double
-    temp = cell2mat(subVect(:, iSubVect));
     % calculate covariance matrices of subvectors
-    covSubVect{iSubVect} = temp' * temp / length(temp);
+    covSubVect{iSubVect} = subVect{iSubVect}' * subVect{iSubVect} / size(subVect{iSubVect}, 2);
 end
 % smoothed covariance matrix of object
 covSmooth = mean(cat(3, covSubVect{:}), 3);

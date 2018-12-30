@@ -47,7 +47,7 @@ delayEst = cell(nSignals, 1);
 % covariance matrix of symbol matrix
 covSymbol = symbolsMatrix * symbolsMatrix' / length(symbolsMatrix);
 % shifting matrix
-shiftMatrix = [zeros(1, 2 * nChips); eye(2 * nChips - 1) zeros(2 * nChips - 1, 1)];
+shiftMatrix = [zeros(1, 2 * nChips); eye(2 * nChips - 1), zeros(2 * nChips - 1, 1)];
 % extend the gold sequence by padding zeros to double length
 goldSeqExtend = [goldSeq; zeros(size(goldSeq))];
 % Fourier transformation constant
@@ -74,11 +74,15 @@ for iSignal = 1: nSignals
     ftSubVect = ftVect(1: lenSubVect);
     % smoothed covariance matrix of signal
     [covSmoothSignal] = temporal_smoothing(nSubVects, lenSubVect, nAnts, nChips, tfSignal);
+    [covSmoothTf] = temporal_smoothing(nSubVects, lenSubVect, nAnts, nChips, tfMatrix * tfMatrix');
 %     % smoothed covariance matrix of transformation
 %     [covSmoothTf] = temporal_smoothing(nSubVects, lenSubVect, nAnts, nChips, tfMatrix * tfMatrix');
-    [tfSmooth] = spatial_smoothing(lenSubVect, nAnts, tfMatrix * tfMatrix');
+%     covTf = tfMatrix * tfMatrix' / length(tfMatrix);
+%     nSub = length(covTf) - rank(covTf) + 1;
+%     [tfSmooth] = spatial_smoothing(lenSubVect, nAnts, tfMatrix * tfMatrix');
+    
     % obtain generalised noise eigenvectors
-    [eigVectNoise] = detection(covSmoothSignal, diag(diag(tfSmooth)));
+    [eigVectNoise] = detection(covSmoothSignal, diag(diag(covSmoothTf)));
     for iAzimuth = azimuth
         % the corresponding manifold vector
         spvComponent = spv(array, [iAzimuth elevation]);

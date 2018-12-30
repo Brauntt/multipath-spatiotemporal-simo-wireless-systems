@@ -20,7 +20,7 @@ if mod(length(symbolsOut), nChips)
     symbolsOut(length(symbolsOut) + mod(length(symbolsOut), nChips), end) = 0;
 end
 % declare size of dymbol matrix
-symbolsMatrix = zeros(nAnts * 2 * nChips, length(symbolsOut) / nChips);
+symbolsMatrix = zeros(nAnts * 2 * nChips, (length(symbolsOut) - nChips) / nChips);
 for iAnt = 1: nAnts
     % symbols on the current antenna
     symbolsAnt = symbolsOut(:, iAnt);
