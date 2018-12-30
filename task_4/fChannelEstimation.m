@@ -73,16 +73,12 @@ for iSignal = 1: nSignals
     % obtain Fourier transformation subvector
     ftSubVect = ftVect(1: lenSubVect);
     % smoothed covariance matrix of signal
-    [covSmoothSignal] = temporal_smooth(nSubVects, lenSubVect, nAnts, nChips, tfSignal);
-    % smoothed covariance matrix of transformation
-    [covSmoothTf] = temporal_smooth(nSubVects, lenSubVect, nAnts, nChips, tfMatrix * tfMatrix');
-%     % signal eigenvectors detection
-%     [~, eigVectSignal] = detection(covSmoothSignal);
-%     % transformation eigenvectors detection
-%     [~, eigVectTf] = detection(diag(diag(covSmoothTf)));
-%     % generalised noise eigenvectors
-%     eigVectNoise = fpoc([eigVectSignal, eigVectTf]);
-    [eigVectNoise] = detection(covSmoothSignal, diag(diag(covSmoothTf)));
+    [covSmoothSignal] = temporal_smoothing(nSubVects, lenSubVect, nAnts, nChips, tfSignal);
+%     % smoothed covariance matrix of transformation
+%     [covSmoothTf] = temporal_smoothing(nSubVects, lenSubVect, nAnts, nChips, tfMatrix * tfMatrix');
+    [tfSmooth] = spatial_smoothing(lenSubVect, nAnts, tfMatrix * tfMatrix');
+    % obtain generalised noise eigenvectors
+    [eigVectNoise] = detection(covSmoothSignal, diag(diag(tfSmooth)));
     for iAzimuth = azimuth
         % the corresponding manifold vector
         spvComponent = spv(array, [iAzimuth elevation]);
