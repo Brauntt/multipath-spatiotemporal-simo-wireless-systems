@@ -67,25 +67,40 @@ for iSignal = 1: nSignals
     % transformed signal
     tfSignal = tfMatrix * symbolsMatrix;
     % number of space-time subvectors
-    nSubVects = nPaths(iSignal);    
+    nSubVects = nPaths(iSignal);
     % length of space-time subvectors (d + Q - 1 <= 2 * Nc)
     lenSubVect = 2 * nChips + 1 - nSubVects;
+    % obtain Fourier transformation subvector
+    ftSubVect = ftVect(1: lenSubVect);
     % smoothed covariance matrix of signal
-    [covSmoothVect] = temporal_smooth(nSubVects, lenSubVect, nAnts, nChips, tfSignal);
+    [covSmoothSignal] = temporal_smooth(nSubVects, lenSubVect, nAnts, nChips, tfSignal);
     % smoothed covariance matrix of transformation
     [covSmoothTf] = temporal_smooth(nSubVects, lenSubVect, nAnts, nChips, tfMatrix * tfMatrix');
-    % combine to obtain overall smoothed covariance matrix
-    covSmooth = [covSmoothVect, diag(diag(covSmoothTf))];
-    % signal eigenvectors detection
-    [~, eigVectSignal] = detection(covSmooth);
+%     % signal eigenvectors detection
+%     [~, eigVectSignal] = detection(covSmoothSignal);
+%     % transformation eigenvectors detection
+%     [~, eigVectTf] = detection(diag(diag(covSmoothTf)));
+%     % generalised noise eigenvectors
+%     eigVectNoise = fpoc([eigVectSignal, eigVectTf]);
+    [eigVectNoise] = detection(covSmoothSignal, diag(diag(covSmoothTf)));
     for iAzimuth = azimuth
         % the corresponding manifold vector
         spvComponent = spv(array, [iAzimuth elevation]);
         for iDelay = 1: nDelays
             % spatio-temporal array manifold
-            starManifold = kron(spvComponent, shiftMatrix ^ iDelay * goldSeqExtend(:, iSignal));
+            %             starManifold = kron(spvComponent, shiftMatrix ^ iDelay * goldSeqExtend(:, iSignal));
+            starManifold = kron(spvComponent, ftSubVect .^ iDelay);
+            costFun(iAzimuth + 1, iDelay) = 1 ./ (starManifold' * (eigVectNoise * eigVectNoise') * starManifold);
         end
     end
+    % sort the cost function indexes
+    [~, sortIndex] = sort(costFun(:), 'descend');
+    % the few maximum 1-D indexes
+    columnIndex = sortIndex(1: nPaths(iSignal));
+    % convert to 2-D to obtain corresponding DOA and delays
+    [doaEst{iSignal}, delayEst{iSignal}] = ind2sub(size(costFun), columnIndex);
+    % convert indexes to real delays
+    doaEst{iSignal} = doaEst{iSignal} - 1;
 end
 % store the estimations in matrices as required
 doaEst = [cell2mat(doaEst), zeros(length(cell2mat(doaEst)), 1)];

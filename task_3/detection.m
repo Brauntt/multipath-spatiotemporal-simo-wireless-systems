@@ -14,7 +14,7 @@ function [nSourcesEst, eigVectSignal] = detection(covMatrix, desiredNoisePower)
 %   - Traditional detection is based on observations, where the criterion
 %   of regarding a eigenvalue as 'small' corresponding to noise is
 %   determined by noise power. In this case we use a simplified model based
-%   on comparison: the threshold is defined as half of the noise power. The
+%   on comparison: the threshold is defined as double the noise power. The
 %   precision of this function needs improvements.
 %
 % Comments:
@@ -25,7 +25,7 @@ function [nSourcesEst, eigVectSignal] = detection(covMatrix, desiredNoisePower)
 [eigVector, eigValue] = eig(covMatrix);
 eigValue = abs(diag(eigValue));
 % signal and noise eigenvalue threshold
-eigNoiseThr = desiredNoisePower / 2;
+eigNoiseThr = 2 * desiredNoisePower;
 % estimated source number 
 nSourcesEst = sum(eigValue > eigNoiseThr);
 % signal eigenvector

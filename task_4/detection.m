@@ -1,13 +1,13 @@
-function [nSourcesEst, eigVectSignal] = detection(covMatrix)
+function [eigVectNoise] = detection(objA, objB)
 % Function: 
-%   - detector for continous signal, based on eigendecomposition
+%   - detect the generalised noise eigenvectors based on eigendecomposition
 %
 % InputArg(s):
-%   - covMatrix: covariance matrix of the received signal
+%   - objA: smoothed covariance matrix of signal
+%   - objB: diagonal matrix of smoothed covariance matrix of transformation
 %
 % OutputArg(s):
-%   - nSourcesEst: number of sources estimated
-%   - eigVectorSignal: signal eigenvector
+%   - eigVectNoise: generalised noise eigenvectors
 %
 % Restraints:
 %   - Traditional detection is based on observations, where the criterion
@@ -17,17 +17,19 @@ function [nSourcesEst, eigVectSignal] = detection(covMatrix)
 %   is unknown. The precision of this function needs improvements.
 %
 % Comments:
-%   - also obtain signal eigenvector to create subspace for MUSIC algorithm
+%   - also obtain noise eigenvector to create subspace for MUSIC algorithm
 %
-% Author & Date: Yang (i@snowztail.com) - 27 Nov 18
+% Author & Date: Yang (i@snowztail.com) - 30 Dec 18
 
-[eigVector, eigValue] = eig(covMatrix);
+[eigVector, eigValue] = eig(objA, objB);
 eigValue = abs(diag(eigValue));
 % signal and noise eigenvalue threshold
 eigNoiseThr = 0.01;
-% estimated source number 
-nSourcesEst = sum(eigValue > eigNoiseThr);
+% % estimated source number
+% nSourcesEst = sum(eigValue > eigNoiseThr);
 % signal eigenvector
 eigVectSignal = eigVector(:, eigValue > eigNoiseThr);
+% generalised noise eigenvector
+eigVectNoise = fpoc(eigVectSignal);
 end
 
