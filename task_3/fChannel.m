@@ -68,15 +68,15 @@ for iSignal = 1: nSignals
     % update the previous path counter
     pathCounterPrev = pathCounter;
     % calculate the desired signal power
-    powerSignal = sum(abs(symbolsDesired).^2) / length(symbolsDesired);
+    powerSignal = mean(sum(abs(symbolsDesired).^2) / length(symbolsDesired));
     % hence the noise power
     powerNoise = powerSignal / snr;
     % obtain the noise power of the desired signal
     if iSignal == desiredIndex
-       desiredNoisePower = mean(powerNoise);
+       desiredNoisePower = powerNoise;
     end
     % then generate noise accordingly
-    noise{iSignal} = (randn(length(symbolsIn), 1) + 1i * randn(length(symbolsIn), 1)) * sqrt(powerNoise / 2);
+    noise{iSignal} =  sqrt(powerNoise / 2) * (randn(size(symbolsDesired)) + 1i * randn(size(symbolsDesired)));
 end
 for iSignal = 1: nSignals
     % produces multiple output symbol streams with noise level based on
