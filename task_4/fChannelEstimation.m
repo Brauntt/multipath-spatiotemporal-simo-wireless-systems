@@ -68,7 +68,7 @@ for iSignal = 1: nSignals
     nSubMats = nPaths(iSignal);
     nSubMats = 2;
     % first perform spatial smoothing of covariance matrix
-    [tfSignalSpatialSmooth] = spatial_smoothing(nSubMats, nAnts, covTfSignal);
+    [tfSignalSpatial] = spatial_smoothing(nSubMats, nAnts, covTfSignal);
     % number of space-time subvectors
     nSubVects = nPaths(iSignal);
     % length of space-time subvectors (d + Q - 1 <= 2 * Nc)
@@ -77,9 +77,13 @@ for iSignal = 1: nSignals
     ftSubVect = ftVect(1: lenSubVect);
     % then perform temporal smoothing of the spatial smoothed result
 %     [covSmoothSignal] = temporal_smoothing(nSubVects, lenSubVect, nAnts, nChips, tfSignalSpatialSmooth);
-    [covSmoothSignal] = ts(nSubVects, lenSubVect, nAnts, nChips, tfSignalSpatialSmooth);
+%     [covSmoothSignal] = ts(tfSignalSpatialSmooth, nChips, nSubVects);
+    [tfSignalSmooth] = temp(nSubVects, lenSubVect, nChips, tfSignalSpatial);
     
-    [covSmoothTf] = temporal_smoothing(nSubVects, lenSubVect, nAnts, nChips, tfMatrix * tfMatrix');
+    [tfMatrixTemporal] = temp(nSubVects, lenSubVect, nChips, tfMatrix * tfMatrix');
+    [tfMatrixSmooth] = spatial_smoothing(nSubMats, nAnts, tfMatrixTemporal);
+    
+%     [covSmoothTf] = temporal_smoothing(nSubVects, lenSubVect, nAnts, nChips, tfMatrix * tfMatrix');
 %     % smoothed covariance matrix of transformation
 %     [covSmoothTf] = temporal_smoothing(nSubVects, lenSubVect, nAnts, nChips, tfMatrix * tfMatrix');
 %     covTf = tfMatrix * tfMatrix' / length(tfMatrix);
@@ -87,10 +91,11 @@ for iSignal = 1: nSignals
 %     [tfSmooth] = spatial_smoothing(lenSubVect, nAnts, tfMatrix * tfMatrix');
     
     % obtain generalised noise eigenvectors
-    [eigVectNoise] = detection(covSmoothSignal, diag(diag(covSmoothTf)));
+%     [eigVectNoise] = detection(covSmoothSignal, diag(diag(covSmoothTf)));
+    [eigVectNoise] = detection(tfSignalSmooth, tfMatrixSmooth);
     for iAzimuth = azimuth
         % the corresponding manifold vector
-        spvComponent = spv(array, [iAzimuth elevation]);
+        spvComponent = spv(array(1: nAnts - nSubMats + 1, :), [iAzimuth elevation]);
         for iDelay = 1: nDelays
             % spatio-temporal array manifold
             %             starManifold = kron(spvComponent, shiftMatrix ^ iDelay * goldSeqExtend(:, iSignal));
