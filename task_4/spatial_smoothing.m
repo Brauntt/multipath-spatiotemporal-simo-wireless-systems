@@ -23,7 +23,7 @@ lenVect = length(obj) / nAnts;
 lenSmooth = lenVect * (nAnts + 1 - nSubMats);
 for iSubMat = 1: nSubMats
     % retrieve submatrices and sum them
-    objSpatialSmooth = objSpatialSmooth + obj((iSubMat - 1) * lenVect + 1: (iSubMat - 1) * lenVect + lenSmooth, (iSubMat - 1) * lenVect + 1: (iSubMat - 1) * lenVect + lenSmooth);
+    objSpatialSmooth = objSpatialSmooth + obj((iSubMat - 1) * lenVect + 1: (iSubMat - 1) * lenVect + lenSmooth, :);
 end
 % then take average
 objSpatialSmooth = objSpatialSmooth / nSubMats;
