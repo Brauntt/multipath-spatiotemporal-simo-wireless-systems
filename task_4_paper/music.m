@@ -35,6 +35,7 @@ azimuth = 0: 180; elevation = 0;
 costFun = zeros(length(azimuth), nDelays);
 % obtain generalised noise eigenvectors
 [eigVectNoise] = detection(tfSignalSmooth, tfMatrixSmooth, nSources);
+% spvComponent = spv(array(1: nAnts - nSubMats + 1, :), [azimuth' elevation * ones(length(azimuth), 1)]);
 for iAzimuth = azimuth
     % the corresponding manifold vector
     spvComponent = spv(array(1: nAnts - nSubMats + 1, :), [iAzimuth elevation]);
@@ -43,6 +44,7 @@ for iAzimuth = azimuth
         %             starManifold = kron(spvComponent, shiftMatrix ^ iDelay * goldSeqExtend(:, iSignal));
         starManifold = kron(spvComponent, ftSubVect .^ iDelay);
         costFun(iAzimuth + 1, iDelay) = 1 ./ (starManifold' * (eigVectNoise * eigVectNoise') * starManifold);
+%         costFun(:, iDelay) = 1 ./ (starManifold' * (eigVectNoise * eigVectNoise') * starManifold);
     end
 end
 % sort the cost function indexes

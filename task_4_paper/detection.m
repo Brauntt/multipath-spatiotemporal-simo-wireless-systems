@@ -25,6 +25,7 @@ function [eigVectNoise] = detection(objA, objB, nSources)
 [eigVector, eigValue] = eig(objA, objB);
 eigValue = abs(diag(eigValue));
 eigVectNoise = eigVector(:, 1: end - nSources);
+% eigVectNoise = eigVector(:, 1: 178);
 
 % % signal and noise eigenvalue threshold
 % eigNoiseThr = 0.01;
