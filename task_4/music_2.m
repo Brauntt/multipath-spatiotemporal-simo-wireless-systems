@@ -1,4 +1,4 @@
-function [doaEst, delayEst] = musical(array, symbolsMatrix, covSample, goldSeq, nPaths)
+function [doaEst, delayEst] = music_2(array, symbolsMatrix, covSample, goldSeq, nPaths)
 % Function:
 %   - find the direction of arrival based on MUSIC algorithm
 %
@@ -16,12 +16,12 @@ function [doaEst, delayEst] = musical(array, symbolsMatrix, covSample, goldSeq, 
 % Author & Date: Yang (i@snowztail.com) - 27 Nov 18
 azimuth = 0: 180;
 elevation = 0;
-[nDelays, nSignals] = size(goldSeq);
+[nRelativeDelays, nSignals] = size(goldSeq);
 nAnts = length(array);
 nChips = length(goldSeq);
-shiftMatrix = [zeros(1, 2 * nChips); eye(2 * nChips - 1), zeros(2 * nChips - 1, 1)];
+shiftMatrix = [zeros(1, 2 * nChips); eye(2 * nChips - 1) zeros(2 * nChips - 1, 1)];
 goldSeqExtend = [goldSeq; zeros(size(goldSeq))];
-costFunSub = zeros(length(azimuth), nDelays);
+costFunSub = zeros(length(azimuth), nRelativeDelays);
 costFun = cell(nSignals, 1);
 delayEst = cell(nSignals, 1);
 doaEst = cell(nSignals, 1);
@@ -42,8 +42,6 @@ tfSignal = transformMatrix * symbolsMatrix;
 nVectors = size(tfSignal,2);
 covSmoothSignal = 0;
 covSmoothTf = 0;
-% % Q = nPaths - 1
-% nSubVect = nPaths - 1;
 % Q = nPaths
 subvectLength = 2 * nChips + 1 - nPaths;
 phiSub = phiVect(1: subvectLength);
@@ -64,21 +62,20 @@ for iPath = 1: nPaths
     covSmoothTf = covSmoothTf + (1 / nPaths) * (subVectTf(iPath, :)' * subVectTf(iPath, :)) / length(subVectTf(iPath, :));
 end
 [nSources, eigVectSignal] = detection(covSmoothSignal);
-% [nSources, eigVectTf] = detection(covSmoothTf);
-covTf = transformMatrix * transformMatrix' / length(transformMatrix);
-[nSources, eigVectTf] = detection(covTf);
+[nSources, eigVectTf] = detection(covSmoothTf);
 for iSignal = 1: nSignals
     for iAzimuth = azimuth
-        % the corresponding manifold vector
         spvComponent = spv(array, [iAzimuth elevation]);
-        for iDelay = 1: nDelays
-            % spatio-temporal array manifold
+        for iDelay = 1: nRelativeDelays
+            %         starManifold = kron(spvComponent, shiftMatrix ^ iDelay * goldSeqExtend);
             starManifold = kron(spvComponent, phiSub .^ iDelay);
-%             % the corresponding cost function
-%             costFun(iAzimuth + 1, iDelay) = 1 ./ (starManifold' * fpoc([eigVectSignal eigVectTf]) * starManifold);
-            
+            costFunSub(iAzimuth + 1, iDelay) = 1 ./ (starManifold' * fpoc([eigVectSignal eigVectTf]) * starManifold);
         end
     end
+    costFun{iSignal} = costFunSub;
+    [~, sortIndex] = sort(costFunSub(:), 'descend');
+    tempIndex = sortIndex(1: nPaths(iSignal));
+    [doaEst{iSignal}, delayEst{iSignal}] = ind2sub(size(costFunSub), tempIndex);
+    doaEst{iSignal} = doaEst{iSignal} - 1;
 end
-
 end

@@ -20,18 +20,16 @@ function [doaEst, delayEst] = fChannelEstimation(array, symbolsOut, goldSeq, nPa
 % Author & Date: Yang (i@snowztail.com) - 21 Dec 18
 
 %% Initialisation
-% possible azimuth and elevation angles of arrival
-azimuth = 0: 180; elevation = 0;
 % obtain the maximum possible relative delay and number of signals
 [nDelays, nSignals] = size(goldSeq);
 % chip length
 nChips = length(goldSeq);
 % number of receiving antennas
 nAnts = length(array);
+% number of samples
+nSamples = size(symbolsOut, 2);
 % star manifold matrix
 starMatrix = cell(nSignals);
-% cost function
-costFun = zeros(length(azimuth), nDelays);
 % Fourier transformation vector
 ftVect = zeros(2 * nChips, 1);
 % Fourier transformation matrix
@@ -70,22 +68,26 @@ for iSignal = 1: nSignals
     % number of space-time subvectors
     nSubVects = nPaths(iSignal);
     % length of space-time subvectors (d + Q - 1 <= 2 * Nc)
-    lenSubVect = 2 * nChips + 1 - nSubVects;
+    lenSubVect = 2 * nChips - 1 - nSubVects;
     % obtain Fourier transformation subvector
     ftSubVect = ftVect(1: lenSubVect);
     % then perform temporal smoothing of the spatial smoothed result
 %     [covSmoothSignal] = temporal_smoothing(nSubVects, lenSubVect, nAnts, nChips, tfSignalSpatialSmooth);
 %     [covSmoothSignal] = ts(tfSignalSpatialSmooth, nChips, nSubVects);
-%     [tfSignalSmooth] = temp(nSubVects, lenSubVect, nChips, tfSignalSpatial);
+
     % first perform spatial smoothing for signal
-    [tfSignalSpatial] = spatial_smoothing(nSubMats, nAnts, tfSignal);
+    [tfSignalSpatial] = spatial_smoothing(nSubMats, nAnts, covTfSignal);
     % then temporal smoothing
-    [tfSignalSmooth] = temporal_smoothing(nSubVects, lenSubVect, nAnts - nSubMats + 1, nChips, tfSignalSpatial);
+    [tfSignalSmooth] = temp(nSubVects, lenSubVect, nChips, tfSignalSpatial);
+%     [tfSignalSmooth] = temporal_smoothing(nSubVects, lenSubVect, nAnts - nSubMats + 1, nChips, tfSignalSpatial);
     
+    % first perform temporal smoothing for transformation
+    tfMatrixTemporal = temp(nSubVects, lenSubVect, nChips, tfMatrix * tfMatrix');
 %     [tfMatrixTemporal] = temporal_smoothing(nSubVects, lenSubVect, nAnts, nChips, tfMatrix * tfMatrix');
-%     [tfMatrixSmooth] = spatial_smoothing(nSubMats, nAnts, tfMatrixTemporal);
-    [tfMatrixSpatial] = spatial_smoothing(nSubMats, nAnts, tfMatrix * tfMatrix');
-    [tfMatrixSmooth] = temporal_smoothing(nSubVects, lenSubVect, nAnts - nSubMats + 1, nChips, tfMatrixSpatial);
+    % then spatial smoothing
+    [tfMatrixSmooth] = spatial_smoothing(nSubMats, nAnts, tfMatrixTemporal);
+%     [tfMatrixSpatial] = spatial_smoothing(nSubMats, nAnts, tfMatrix * tfMatrix');
+%     [tfMatrixSmooth] = temporal_smoothing(nSubVects, lenSubVect, nAnts - nSubMats + 1, nChips, tfMatrixSpatial);
     
 %     [covSmoothTf] = temporal_smoothing(nSubVects, lenSubVect, nAnts, nChips, tfMatrix * tfMatrix');
 %     % smoothed covariance matrix of transformation
@@ -93,28 +95,8 @@ for iSignal = 1: nSignals
 %     covTf = tfMatrix * tfMatrix' / length(tfMatrix);
 %     nSub = length(covTf) - rank(covTf) + 1;
 %     [tfSmooth] = spatial_smoothing(lenSubVect, nAnts, tfMatrix * tfMatrix');
-    
-    % obtain generalised noise eigenvectors
-%     [eigVectNoise] = detection(covSmoothSignal, diag(diag(covSmoothTf)));
-    [eigVectNoise] = detection(tfSignalSmooth, tfMatrixSmooth);
-    for iAzimuth = azimuth
-        % the corresponding manifold vector
-        spvComponent = spv(array(1: nAnts - nSubMats + 1, :), [iAzimuth elevation]);
-        for iDelay = 1: nDelays
-            % spatio-temporal array manifold
-            %             starManifold = kron(spvComponent, shiftMatrix ^ iDelay * goldSeqExtend(:, iSignal));
-            starManifold = kron(spvComponent, ftSubVect .^ iDelay);
-            costFun(iAzimuth + 1, iDelay) = 1 ./ (starManifold' * (eigVectNoise * eigVectNoise') * starManifold);
-        end
-    end
-    % sort the cost function indexes
-    [~, sortIndex] = sort(costFun(:), 'descend');
-    % the few maximum 1-D indexes
-    columnIndex = sortIndex(1: nPaths(iSignal));
-    % convert to 2-D to obtain corresponding DOA and delays
-    [doaEst{iSignal}, delayEst{iSignal}] = ind2sub(size(costFun), columnIndex);
-    % convert indexes to real delays
-    doaEst{iSignal} = doaEst{iSignal} - 1;
+    [nSourcesAic] = detector_aic(nSamples, tfSignalSmooth);
+    [doaEst{iSignal}, delayEst{iSignal}] = music(array(1: nAnts - nSubMats + 1, :), tfSignalSmooth, tfMatrixSmooth, nSourcesAic, ftSubVect, nDelays, nAnts, nSubMats, nPaths(iSignal));
 end
 % store the estimations in matrices as required
 doaEst = [cell2mat(doaEst), zeros(length(cell2mat(doaEst)), 1)];
