@@ -95,7 +95,7 @@ for iSignal = 1: nSignals
 %     covTf = tfMatrix * tfMatrix' / length(tfMatrix);
 %     nSub = length(covTf) - rank(covTf) + 1;
 %     [tfSmooth] = spatial_smoothing(lenSubVect, nAnts, tfMatrix * tfMatrix');
-    [nSourcesAic] = detector_aic(nSamples, tfSignalSmooth);
+    [nSourcesAic] = detector_aic(nSamples, tfSignalSmooth, tfMatrixSmooth);
     [doaEst{iSignal}, delayEst{iSignal}] = music(array(1: nAnts - nSubMats + 1, :), tfSignalSmooth, tfMatrixSmooth, nSourcesAic, ftSubVect, nDelays, nAnts, nSubMats, nPaths(iSignal));
 end
 % store the estimations in matrices as required
