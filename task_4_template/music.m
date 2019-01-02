@@ -43,7 +43,7 @@ costFun = zeros(length(azimuth), nDelays);
 angles = [azimuth', ones(length(azimuth), 1) * elevation];
     for iDelay = 1: nDelays
         % spatio-temporal array manifold
-        starManifold = kron(ones(length(array), length(azimuth)) .* spv(array, angles), ftSubVect .^ (iDelay - 1));
+        starManifold = kron(ones(length(array), length(azimuth)) .* spv(array, angles), ftSubVect .^ iDelay);
 %         -10*log10(real(diag(S'*EE*EE'*S)))'
 %         costFun(:, iDelay) = -10 * log10(real(diag(starManifold' * (eigVectNoise * eigVectNoise') * starManifold)));
         costFun(:, iDelay) = 1 ./ real(diag(starManifold' * (eigVectNoise * eigVectNoise') * starManifold));

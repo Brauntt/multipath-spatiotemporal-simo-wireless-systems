@@ -70,19 +70,19 @@ for iSignal = 1: nSignals
     % number of space-time subvectors
     nSubVects = nPaths(iSignal);
     % length of space-time subvectors (d + Q - 1 <= 2 * Nc)
-    lenSubVect = 2 * nChips - 1 - nSubVects;
+    lenSubVect = 2 * nChips + 1 - nSubVects;
     % obtain Fourier transformation subvector
     ftSubVect = ftVect(1: lenSubVect);
 
     % first perform spatial smoothing for signal
     [tfSignalSpatial] = spatial_smoothing(nSubMats, nAnts, covTfSignal);
     % then temporal smoothing
-%     [tfSignalSmooth] = temporal_smoothing(nSubVects, lenSubVect, nChips, tfSignalSpatial);
-    [tfSignalSmooth] = temporal_paper(nSubVects, lenSubVect, nAnts - nSubMats + 1, nChips, tfSignalSpatial);
+    [tfSignalSmooth] = temporal_smoothing(nSubVects, lenSubVect, nChips, tfSignalSpatial);
+%     [tfSignalSmooth] = temporal_smoothing(nSubVects, lenSubVect, nAnts - nSubMats + 1, nChips, tfSignalSpatial);
     
     % first perform temporal smoothing for transformation
-%     tfMatrixTemporal = temporal_smoothing(nSubVects, lenSubVect, nChips, tfMatrix * tfMatrix');
-    [tfMatrixTemporal] = temporal_paper(nSubVects, lenSubVect, nAnts, nChips, tfMatrix * tfMatrix');
+    tfMatrixTemporal = temporal_smoothing(nSubVects, lenSubVect, nChips, tfMatrix * tfMatrix');
+%     [tfMatrixTemporal] = temporal_smoothing(nSubVects, lenSubVect, nAnts, nChips, tfMatrix * tfMatrix');
     % then spatial smoothing
     [tfMatrixSmooth] = spatial_smoothing(nSubMats, nAnts, tfMatrixTemporal);
 %     [tfMatrixSpatial] = spatial_smoothing(nSubMats, nAnts, tfMatrix * tfMatrix');

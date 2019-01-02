@@ -1,51 +1,15 @@
-function [objTemporalSmooth] = temporal_smoothing(nSubVects, lenSubVect, nAnts, nChips, obj)
-% Function: 
-%   - temporal smoothing
-%
-% InputArg(s):
-%   - nSubVects: number of space-time subvectors
-%   - lenSubVect: length of space-time subvectors (d + Q - 1 <= 2 * Nc)
-%   - nAnts: number of receiving antennas
-%   - nChips: chip length
-%   - obj: object matrix to perform temporal smoothing
-%
-% OutputArg(s):
-%   - objTemporalSmooth: temporally smoothed covariance matrix
-%
-% Comments:
-%   - the diagram can be found in document
-%
-% Author & Date: Yang (i@snowztail.com) - 30 Dec 18
+function [objTemporalSmooth] = temporal_smoothing(nSubVects, lenSubVect, nChips, obj)
 
-% number of samples
-nSamples = size(obj, 2);
-% subvector pieces
-subVectPiece = cell(nSubVects, nAnts);
-% subvectors set
-subVectSet = cell(nSamples, nSubVects);
-% all subvectors
-subVect = cell(nSubVects, 1);
-% covariance matrix of subvectors
-covSubVect = cell(nSubVects, 1);
-for iSample = 1: nSamples
-    % transformed signal on each antenna
-    tfSignalSplit = reshape(obj(:, iSample), nAnts, 2 * nChips);
-    for iSubVect = 1: nSubVects
-        for iAnt = 1: nAnts
-            % obtain subvector piece
-            subVectPiece{iSubVect, iAnt} = tfSignalSplit(iAnt, iSubVect: iSubVect + lenSubVect - 1);
-        end
-        % concatenate pieces for subvectors
-        subVectSet{iSample, iSubVect} = cell2mat(subVectPiece(iSubVect,:));
-        % convert elements to double
-        subVect{iSubVect} = cell2mat(subVectSet(:, iSubVect));
+nSegs = length(obj) / (2 * nChips);
+for iSegRow = 1: nSegs
+    for iSegCol = 1: nSegs
+       objSeg = obj((iSegRow - 1) * 2 * nChips + 1: iSegRow * 2 * nChips, (iSegCol - 1) * 2 * nChips + 1: iSegCol * 2 * nChips);
+       objSub = 0;
+       for iSubVect = 1: nSubVects
+           objSub = objSub + objSeg(iSubVect: iSubVect + lenSubVect - 1, iSubVect: iSubVect + lenSubVect - 1);
+       end
+       objSub = objSub / nSubVects;
+       objTemporalSmooth((iSegRow - 1) * lenSubVect + 1: iSegRow * lenSubVect, (iSegCol - 1) * lenSubVect + 1: iSegCol * lenSubVect) = objSub;
     end
 end
-for iSubVect = 1: nSubVects
-    % calculate covariance matrices of subvectors
-    covSubVect{iSubVect} = subVect{iSubVect}' * subVect{iSubVect} / size(subVect{iSubVect}, 2);
 end
-% smoothed covariance matrix of object
-objTemporalSmooth = mean(cat(3, covSubVect{:}), 3);
-end
-

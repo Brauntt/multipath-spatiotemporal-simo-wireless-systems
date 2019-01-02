@@ -1,4 +1,4 @@
-function [objTemporalSmooth] = temp(nSubVects, lenSubVect, nChips, obj)
+function [objTemporalSmooth] = temporal_smoothing(nSubVects, lenSubVect, nChips, obj)
 
 nSegs = length(obj) / (2 * nChips);
 for iSegRow = 1: nSegs

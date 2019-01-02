@@ -21,7 +21,7 @@ function [doaEst, delayEst] = fChannelEstimation(array, symbolsOut, goldSeq, nPa
 
 % obtain the maximum possible relative delay and number of signals
 [nDelays, nSignals] = size(goldSeq);
-% possible azimuth and elevation angles of arrival
+% possible azimuth and elevation angles of arrival and delays
 azimuth = 0: 180; elevation = 0; delay = 1: nDelays;
 % chip length
 nChips = length(goldSeq);

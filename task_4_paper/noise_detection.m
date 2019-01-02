@@ -1,4 +1,4 @@
-function [eigVectNoise] = detection(objA, objB, nSources)
+function [eigVectNoise] = noise_detection(objA, objB, nSources)
 % Function: 
 %   - detect the generalised noise eigenvectors based on eigendecomposition
 %

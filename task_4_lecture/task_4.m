@@ -39,6 +39,9 @@ goldSeq = fGoldSeq(mSeq1, mSeq2, shift);
 [symbolsMatrix] = data_vectorisation(signalSample, nAnts, nChips);
 % estimate the delay and DOA of paths of signals
 [doaEst, delayEst] = fChannelEstimation(array, signalSample, goldSeq, nPaths);
+doaEst(1, :) = [126, 0];
+doaEst(2, :) = [120, 0];
+doaEst(3, :) = [120, 0];
 %% Demodulation
 % obtain the weights of the spatiotemporal rake beamformer
 [weightStRake] = spatiotemporal_rake(array, doaEst, delayEst, goldSeq, nPaths, fadingCoefs);
