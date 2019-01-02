@@ -15,41 +15,22 @@ function [doaEst, delayEst] = music(array, tfSignalSmooth, tfMatrixSmooth, nSour
 %
 % Author & Date: Yang (i@snowztail.com) - 27 Nov 18
 
-% azimuth = 0: 180;
-% elevation = 0;
-% costFun = zeros(length(azimuth), 1);
-% [nSourses, eigVectorSignal] = detection(covMatrix);
-% for iAzimuthAngle = azimuth
-%     spvComponent = spv(array, [iAzimuthAngle elevation], mainlobe);
-%     costFun(iAzimuthAngle + 1) = spvComponent' * fpoc(eigVectorSignal) * spvComponent;
-% end
-% [~, doaIndex] = mink(costFun, nSourses);
-% doaAzimuth = doaIndex - 1;
-% doa = [doaAzimuth elevation * ones(size(doaAzimuth))];
-% doa = sortrows(doa, 1);
-
-
 % possible azimuth and elevation angles of arrival and delays
 azimuth = 0: 180; elevation = 0; delay = 1: nDelays;
 % cost function
 costFun = zeros(length(azimuth), nDelays);
 % obtain generalised noise eigenvectors
 [eigVectNoise] = noise_detection(tfSignalSmooth, tfMatrixSmooth, nSources);
-% [eigVectNoise] = detect(tfSignalSmooth, nSources);
-% spvComponent = spv(array(1: nAnts - nSubMats + 1, :), [azimuth' elevation * ones(length(azimuth), 1)]);
-% for iAzimuth = azimuth
-%     % the corresponding manifold vector
-%     spvComponent = spv(array(1: nAnts - nSubMats + 1, :), [iAzimuth elevation]);
-angles = [azimuth', ones(length(azimuth), 1) * elevation];
+for iAzimuth = azimuth
+    % the corresponding manifold vector
+    spvComponent = spv(array, [iAzimuth elevation]);
     for iDelay = 1: nDelays
         % spatio-temporal array manifold
-        starManifold = kron(ones(length(array), length(azimuth)) .* spv(array, angles), ftSubVect .^ iDelay);
-%         -10*log10(real(diag(S'*EE*EE'*S)))'
-%         costFun(:, iDelay) = -10 * log10(real(diag(starManifold' * (eigVectNoise * eigVectNoise') * starManifold)));
-        costFun(:, iDelay) = 1 ./ real(diag(starManifold' * (eigVectNoise * eigVectNoise') * starManifold));
-%         costFun(:, iDelay) = 1 ./ (starManifold' * (eigVectNoise * eigVectNoise') * starManifold);
+        starManifold = kron(spvComponent, ftSubVect .^ iDelay);
+        % corresponding cost function
+        costFun(iAzimuth + 1, iDelay) = 1 ./ (starManifold' * (eigVectNoise) * starManifold);
     end
-% end
+end
 % plot the 2-d MuSIC spectrum
 plot2d3d(abs(costFun.'), azimuth, delay, 'dB', '2-Dimensional MuSIC Spectrum');
 % find max value of cost function for all directions
@@ -57,7 +38,7 @@ plot2d3d(abs(costFun.'), azimuth, delay, 'dB', '2-Dimensional MuSIC Spectrum');
 % then obtain positions of several max values that suggest delays
 [~, delayEst] = maxk(costFunDelay, nPaths);
 % sort by delay
-delayEst = sort(delayEst);
+delayEst = sort(delayEst(1: nPaths));
 % and find corresponding doas
 doaEst = doaIndex(delayEst) - 1;
 end

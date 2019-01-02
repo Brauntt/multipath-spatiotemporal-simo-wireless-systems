@@ -16,7 +16,7 @@ function [nSources] = detector_aic(nSamples, tfSignalSmooth, tfMatrixSmooth)
 %
 % Author & Date: Yang (i@snowztail.com) - 27 Nov 18
 
-[~, eigValue] = eig(tfSignalSmooth, tfMatrixSmooth);
+[~, eigValue] = eig(tfSignalSmooth);
 eigValue = sort(abs(diag(eigValue)));
 nReceivers = length(eigValue);
 aicFun = (-2) * nSamples * (log(flip(cumprod(eigValue))) + (nReceivers: -1: 1)' .* (log((nReceivers: -1: 1)') - log(flip(cumsum(eigValue))))) + 2 * (0: nReceivers - 1)' .* (2 * nReceivers: -1: nReceivers + 1)';
