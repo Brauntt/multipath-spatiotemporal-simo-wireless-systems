@@ -37,19 +37,19 @@ costFun = zeros(length(azimuth), nDelays);
 [eigVectNoise] = noise_detection(tfSignalSmooth, tfMatrixSmooth, nSources);
 % [eigVectNoise] = detect(tfSignalSmooth, nSources);
 % spvComponent = spv(array(1: nAnts - nSubMats + 1, :), [azimuth' elevation * ones(length(azimuth), 1)]);
-% for iAzimuth = azimuth
-%     % the corresponding manifold vector
-%     spvComponent = spv(array(1: nAnts - nSubMats + 1, :), [iAzimuth elevation]);
-angles = [azimuth', ones(length(azimuth), 1) * elevation];
+for iAzimuth = azimuth
+    % the corresponding manifold vector
+    spvComponent = spv(array, [iAzimuth elevation]);
+% angles = [azimuth', ones(length(azimuth), 1) * elevation];
     for iDelay = 1: nDelays
         % spatio-temporal array manifold
-        starManifold = kron(ones(length(array), length(azimuth)) .* spv(array, angles), ftSubVect .^ (iDelay - 1));
+        starManifold = kron(spvComponent, ftSubVect .^ iDelay);
 %         -10*log10(real(diag(S'*EE*EE'*S)))'
 %         costFun(:, iDelay) = -10 * log10(real(diag(starManifold' * (eigVectNoise * eigVectNoise') * starManifold)));
-        costFun(:, iDelay) = 1 ./ real(diag(starManifold' * (eigVectNoise * eigVectNoise') * starManifold));
+        costFun(iAzimuth + 1, iDelay) = 1 ./ starManifold' * (eigVectNoise * eigVectNoise') * starManifold;
 %         costFun(:, iDelay) = 1 ./ (starManifold' * (eigVectNoise * eigVectNoise') * starManifold);
     end
-% end
+end
 % plot the 2-d MuSIC spectrum
 plot2d3d(abs(costFun.'), azimuth, delay, 'dB', '2-Dimensional MuSIC Spectrum');
 % find max value of cost function for all directions

@@ -76,21 +76,23 @@ for iSignal = 1: nSignals
 
     % first perform spatial smoothing for signal
     [tfSignalSpatial] = spatial_smoothing(nSubMats, nAnts, covTfSignal);
+    tfSignalSpatial = covTfSignal;
     % then temporal smoothing
 %     [tfSignalSmooth] = temporal_smoothing(nSubVects, lenSubVect, nChips, tfSignalSpatial);
-    [tfSignalSmooth] = temporal_paper(nSubVects, lenSubVect, nAnts - nSubMats + 1, nChips, tfSignalSpatial);
+    [tfSignalSmooth] = temporal_paper(nSubVects, lenSubVect, nAnts, nChips, tfSignalSpatial);
     
     % first perform temporal smoothing for transformation
 %     tfMatrixTemporal = temporal_smoothing(nSubVects, lenSubVect, nChips, tfMatrix * tfMatrix');
     [tfMatrixTemporal] = temporal_paper(nSubVects, lenSubVect, nAnts, nChips, tfMatrix * tfMatrix');
     % then spatial smoothing
     [tfMatrixSmooth] = spatial_smoothing(nSubMats, nAnts, tfMatrixTemporal);
+    tfMatrixSmooth = tfMatrixTemporal;
 %     [tfMatrixSpatial] = spatial_smoothing(nSubMats, nAnts, tfMatrix * tfMatrix');
 %     [tfMatrixSmooth] = temporal_smoothing(nSubVects, lenSubVect, nAnts - nSubMats + 1, nChips, tfMatrixSpatial);
 
-    [nSourcesAic] = detector_aic(nSamples, tfSignalSmooth, tfMatrixSmooth);
-%     [nSourcesMdl] = detector_mdl(nSamples, tfSignalSmooth);
-    [doaEst{iSignal}, delayEst{iSignal}] = music(array(1: nAnts - nSubMats + 1, :), tfSignalSmooth, tfMatrixSmooth, nSourcesAic, ftSubVect, nDelays, nAnts, nSubMats, nPaths(iSignal));
+%     [nSourcesAic] = detector_aic(nSamples, tfSignalSmooth, tfMatrixSmooth);
+    [nSourcesMdl] = detector_mdl(nSamples, tfSignalSmooth);
+    [doaEst{iSignal}, delayEst{iSignal}] = music(array, tfSignalSmooth, tfMatrixSmooth, nSourcesMdl, ftSubVect, nDelays, nAnts, nSubMats, nPaths(iSignal));
 end
 % store the estimations in matrices as required
 doaEst = [cell2mat(doaEst)', zeros(length(cell2mat(doaEst)), 1)];
