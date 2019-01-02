@@ -1,4 +1,4 @@
-function [doaEst, delayEst] = music(array, symbolsMatrix, covSample, goldSeq, nPaths)
+function [doaEst, delayEst] = music_2(array, symbolsMatrix, covSample, goldSeq, nPaths)
 % Function:
 %   - find the direction of arrival based on MUSIC algorithm
 %

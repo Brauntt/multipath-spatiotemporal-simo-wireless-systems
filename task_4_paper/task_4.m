@@ -46,4 +46,3 @@ goldSeq = fGoldSeq(mSeq1, mSeq2, shift);
 [bitsOut] = fDSQPSKDemodulator(symbolsMatrix, weightStRake, goldSeq, phi);
 % display the text
 display_text(bitsOut, nChars);
-

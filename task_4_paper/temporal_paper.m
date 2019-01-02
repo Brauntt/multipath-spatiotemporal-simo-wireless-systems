@@ -1,4 +1,4 @@
-function [covSmooth] = temporal_smoothing(nSubVects, lenSubVect, nAnts, nChips, obj)
+function [objTemporalSmooth] = temporal_paper(nSubVects, lenSubVect, nAnts, nChips, obj)
 % Function: 
 %   - temporal smoothing
 %
@@ -10,7 +10,7 @@ function [covSmooth] = temporal_smoothing(nSubVects, lenSubVect, nAnts, nChips, 
 %   - obj: object matrix to perform temporal smoothing
 %
 % OutputArg(s):
-%   - covSmooth: smoothed covariance matrix
+%   - objTemporalSmooth: temporally smoothed covariance matrix
 %
 % Comments:
 %   - the diagram can be found in document
@@ -46,6 +46,6 @@ for iSubVect = 1: nSubVects
     covSubVect{iSubVect} = subVect{iSubVect}' * subVect{iSubVect} / size(subVect{iSubVect}, 2);
 end
 % smoothed covariance matrix of object
-covSmooth = mean(cat(3, covSubVect{:}), 3);
+objTemporalSmooth = mean(cat(3, covSubVect{:}), 3);
 end
 

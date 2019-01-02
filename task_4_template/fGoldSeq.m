@@ -16,6 +16,5 @@ function [goldSeq] = fGoldSeq(mSeq1, mSeq2, shift)
 % Author & Date: Yang (i@snowztail.com) - 21 Dec 18
 
 % generate gold sequence by shifting the second M-sequence
-
 goldSeq = 1 - 2 * (-mSeq1 == circshift(mSeq2, shift));
 end
