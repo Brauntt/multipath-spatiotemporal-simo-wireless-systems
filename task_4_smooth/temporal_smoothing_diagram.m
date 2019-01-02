@@ -1,4 +1,4 @@
-function [objTemporalSmooth] = temporal_paper(nSubVects, lenSubVect, nAnts, nChips, obj)
+function [objTemporalSmooth] = temporal_smoothing_diagram(nSubVects, lenSubVect, nAnts, nChips, obj)
 % Function: 
 %   - temporal smoothing
 %

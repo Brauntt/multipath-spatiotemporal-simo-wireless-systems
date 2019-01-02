@@ -4,8 +4,8 @@ function [nSources] = detector_mdl(nSamples, tfSignalSmooth)
 % length criterion
 %
 % InputArg(s):
-%   - nSnapshots: number of samples
-%   - covSampleRx: covariance matrix of the practical signal
+%   - nSamples: number of samples
+%   - tfSignalSmooth: smoothed signal
 %
 % OutputArg(s):
 %   - nSources: number of sources
@@ -14,6 +14,7 @@ function [nSources] = detector_mdl(nSamples, tfSignalSmooth)
 %   - source count equals minimum index of the function minus one
 %
 % Author & Date: Yang (i@snowztail.com) - 27 Nov 18
+
 [~, eigValue] = eig(tfSignalSmooth);
 eigValue = sort(abs(diag(eigValue)));
 nReceivers = length(eigValue);

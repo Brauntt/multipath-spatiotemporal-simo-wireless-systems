@@ -1,10 +1,11 @@
-function [eigVectNoise] = detect(obj, nSources)
+function [eigVectNoise] = noise_detection(objA, objB, ~)
 % Function: 
 %   - detect the generalised noise eigenvectors based on eigendecomposition
 %
 % InputArg(s):
-%   - obj: smoothed covariance matrix of signal
-%   - nSources: number of sources estimated
+%   - objA: smoothed covariance matrix of signal
+%   - objB: diagonal matrix of smoothed covariance matrix of transformation
+%   - nSources: number of sources estimated by AIC or MDL
 %
 % OutputArg(s):
 %   - eigVectNoise: generalised noise eigenvectors
@@ -21,15 +22,11 @@ function [eigVectNoise] = detect(obj, nSources)
 %
 % Author & Date: Yang (i@snowztail.com) - 30 Dec 18
 
-[eigVector, eigValue] = eig(obj);
+% eigen decomposition
+[eigVector, eigValue] = eig(objA, diag(diag(objB)));
 eigValue = abs(diag(eigValue));
-% eigVectNoise = eigVector(:, 1: end - nSources);
-% eigVectNoise = eigVector(:, 1: 178);
-
 % signal and noise eigenvalue threshold
 eigNoiseThr = 0.01;
-% % estimated source number
-% nSourcesEst = sum(eigValue > eigNoiseThr);
 % signal eigenvector
 eigVectSignal = eigVector(:, eigValue > eigNoiseThr);
 % generalised noise eigenvector
