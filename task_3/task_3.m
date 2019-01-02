@@ -53,6 +53,7 @@ symbolsIn = zeros((2 ^ (length(coeffs) - 1) - 1) * bitsMax / 2, nSignals);
 ber = zeros(nSnr, 1);
 goldSeq = zeros(2 ^ (length(coeffs) - 1) - 1, nSignals);
 disp(['Delays = ' num2str(delays')]);
+disp(['DOAs = ' num2str(reshape(directions', 1, numel(directions)))]);
 %% Balanced gold sequence mining
 % generate M-sequences
 [mSeq1] = fMSeqGen(coeffs(1, :));
@@ -89,6 +90,7 @@ for iSnr = 1: nSnr
     ber(iSnr) = sum(xor(bitsOut(:, desiredIndex), bitsIn(:, desiredIndex))) / length(bitsOut);
     disp(['----------   SNR = ' num2str(snrDb(iSnr)) ' dB ----------']);
     disp(['Estimated delays = ' num2str(delayEst')]);
+    disp(['Estimated DOAs = ' num2str(reshape(doaEst', 1, numel(doaEst)))]);
     disp(['Bit error rate (Source ' num2str(desiredIndex) ') = ' num2str(ber(iSnr))]);
 end
 % rearrange the positions of the figures

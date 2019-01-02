@@ -46,3 +46,8 @@ goldSeq = fGoldSeq(mSeq1, mSeq2, shift);
 [bitsOut] = fDSQPSKDemodulator(symbolsMatrix, weightStRake, goldSeq, phi);
 % display the text
 display_text(bitsOut, nChars);
+disp(['Estimated delays = ' num2str(delayEst')]);
+disp(['Estimated DOAs = ' num2str(reshape(doaEst', 1, numel(doaEst)))]);
+% rearrange the positions of the figures
+tilefigs([0 0.5 0.8 0.5]);
+
