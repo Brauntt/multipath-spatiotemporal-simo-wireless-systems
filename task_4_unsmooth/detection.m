@@ -29,7 +29,5 @@ eigNoiseThr = 0.01;
 nSourcesEst = sum(eigValue > eigNoiseThr);
 % signal eigenvector
 eigVectSignal = eigVector(:, eigValue > eigNoiseThr);
-% noise eigenvector
-eigVectNoise = fpoc(eigVectSignal);
 end
 

@@ -20,7 +20,7 @@ if length(ELarea)==1 | length(AZarea)==1
    
   [maxZ,x]=max(Z); Bestdirection=ELarea(x)
    plot(ELarea,Z),
-               xlabel('Elevation Angle - degrees'),
+               xlabel('Relative Delay - chips'),
                ylabel(Zcapture),grid
  end;            
 else 
@@ -30,12 +30,12 @@ else
     subplot(211), mesh(AZarea,ELarea,Z),
          title(plottitle);
          xlabel('Azimuth Angle - degrees'),
-         ylabel('Elevation Angle - degrees'),
+         ylabel('Relative Delay - chips'),
          zlabel(Zcapture); view([0,0]);grid
      
     subplot(212), mesh(AZarea,ELarea,Z),
          xlabel('Azimuth Angle - degrees'),
-         ylabel('Elevation Angle - degrees'),
+         ylabel('Relative Delay - chips'),
          zlabel(Zcapture); view([90,0]); grid
     
     subplot
@@ -43,10 +43,10 @@ else
     figure(2),surf(AZarea,ELarea,Z),
          title(plottitle);
          xlabel('Azimuth Angle - degrees'),
-         ylabel('Elevation Angle - degrees'),
+         ylabel('Relative Delay - chips'),
          zlabel(Zcapture);grid; 
     figure(3),  contour(AZarea,ELarea,Z),
          title(plottitle);
          xlabel('Azimuth Angle - degrees'),
-         ylabel('Elevation Angle - degrees'),grid;
+         ylabel('Relative Delay - chips'),grid;
 end;

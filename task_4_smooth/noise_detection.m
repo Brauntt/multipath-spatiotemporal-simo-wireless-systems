@@ -1,11 +1,11 @@
-function [eigVectNoise] = noise_detection(objA, objB, nSources)
+function [eigVectNoise] = noise_detection(objA, objB, ~)
 % Function: 
 %   - detect the generalised noise eigenvectors based on eigendecomposition
 %
 % InputArg(s):
 %   - objA: smoothed covariance matrix of signal
 %   - objB: diagonal matrix of smoothed covariance matrix of transformation
-%   - nSources: number of sources estimated
+%   - nSources: number of sources estimated by AIC or MDL
 %
 % OutputArg(s):
 %   - eigVectNoise: generalised noise eigenvectors

@@ -24,19 +24,6 @@ nSignals = size(goldSeq, 2);
 nSymbols = length(symbolsOut);
 % output bits
 bitsOut = zeros(2 * nSymbols, nSignals);
-% % initialise the path counter
-% pathCounter = 1;
-% for iSignal = 1: nSignals
-%     for iPath = 1: nPaths(iSignal)
-%         % MRC weight is the complex conjugate of fading coefficients
-%         weightMrc = fadingCoefs(pathCounter)';
-%         % calculate the weighted signal symbols
-%         symbolWeighted = symbolWeighted + symbolsOut * weightMrc;
-%         % update the path counter
-%         pathCounter = pathCounter + 1;
-%     end
-%     symbol{iSignal} = sum(symbolsOut, 2);
-% end
 % symbol angles in QPSK modulation
 angleQpsk = [phi, phi + pi / 2, phi - pi, phi - pi / 2];
 % demodulate symbols by angle

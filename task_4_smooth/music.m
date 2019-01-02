@@ -1,19 +1,26 @@
-function [doaEst, delayEst] = music(array, tfSignalSmooth, tfMatrixSmooth, nSources, ftSubVect, nDelays, nAnts, nSubMats, nPaths)
+function [doaEst, delayEst] = music(array, tfSignalSmooth, tfMatrixSmooth, nSources, ftSubVect, nDelays, nPaths)
 % Function:
 %   - find the direction of arrival based on MUSIC algorithm
 %
 % InputArg(s):
 %   - array: coordinates of the receiving sensors
-%   - covMatrix: covariance matrix of the received signal
+%   - tfSignalSmooth: temporal smoothed signal
+%   - tfMatrixSmooth: temporal smoothed transformation
+%   - nSources: number of sources estimated by AIC or MDL
+%   - ftSubVect: Fourier transformation subvector
+%   - nDelays: maximum relative delay
+%   - nPaths: number of paths
 %
 % OutputArg(s):
-%   - doa: direction of arrival in degree
+%   - doaEst: estimated direction of arrival in degree
+%   - delayEst: estimated delay
 %
 % Comments:
-%   - noise eigenvectors are orthogonal to array manifold
-%   - the value of the cost function should approach zero at doa
+%   - temporal smoothing refines the signal subspace
+%   - the noise subspace should be detected by eigen decomposition of
+%   smoothed signal and smoothed transformation
 %
-% Author & Date: Yang (i@snowztail.com) - 27 Nov 18
+% Author & Date: Yang (i@snowztail.com) - 1 Jan 19
 
 % possible azimuth and elevation angles of arrival and delays
 azimuth = 0: 180; elevation = 0; delay = 1: nDelays;
@@ -27,7 +34,7 @@ for iAzimuth = azimuth
     for iDelay = 1: nDelays
         % spatio-temporal array manifold
         starManifold = kron(spvComponent, ftSubVect .^ iDelay);
-        % corresponding cost function
+        % cost function
         costFun(iAzimuth + 1, iDelay) = 1 ./ (starManifold' * (eigVectNoise) * starManifold);
     end
 end
