@@ -1,8 +1,8 @@
 %% Initialisation
 clear;close all;
 % name indexes
-surIndex = 26;
-foreIndex = 25;
+surIndex = 3;
+foreIndex = 19;
 % convention
 zPixel = 3;
 bitInt = 8;
