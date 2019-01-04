@@ -18,9 +18,9 @@ function [delayEst] = fChannelEstimation(symbolsOut, goldSeq, nPaths)
 
 % obtain the maximum possible relative delay and number of signals
 [nDelays, nSignals] = size(goldSeq);
-% assume the max actual delay can be 10 times the maximum possible relative
-% delay
-delayMax = 10 * nDelays;
+% assume the max actual delay can be large (improve accuracy with cost of
+% complexity)
+delayMax = length(symbolsOut) - nDelays;
 % estimated delay for all paths
 delayEst = zeros(sum(nPaths), 1);
 % all possible correlation functions
